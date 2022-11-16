@@ -52,7 +52,6 @@ Comparing scan 'A' (Build id = 22132159) against scan 'B' (Build id = 22131974)
 In common with both scans
 =========================
 Application: Secure File Transfer
-Files uploaded: 0
 Top-level modules selected for analysis: 1
 
 Scan 'A'
