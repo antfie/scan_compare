@@ -15,7 +15,7 @@ type API struct {
 }
 
 func main() {
-	print("Scan Compare v1.0\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n")
+	print("Scan Compare v1.2\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n")
 	vid := flag.String("vid", "", "Veracode API ID - See https://docs.veracode.com/r/t_create_api_creds")
 	vkey := flag.String("vkey", "", "Veracode API key - See https://docs.veracode.com/r/t_create_api_creds")
 	scanA := flag.String("a", "", "Veracode Platform URL for scan \"A\"")
@@ -55,6 +55,7 @@ func main() {
 	data.reportScanBDetails()
 	data.reportTopLevelModuleDifferences()
 	data.reportNotSelectedModuleDifferences()
+	data.reportDependencyModuleDifferences()
 	data.reportSummary()
 }
 
@@ -303,18 +304,35 @@ func isModuleNameInSummaryReportModuleArray(module SummaryReportModule, modules 
 func (data Data) reportNotSelectedModuleDifferences() {
 	var report strings.Builder
 
-	compareTopLevelNotSelectedModules(&report, "A", data.ScanAPrescanModuleList, data.ScanBPrescanModuleList, data.ScanAReport.StaticAnalysis.Modules)
-	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules)
+	compareTopLevelNotSelectedModules(&report, "A", data.ScanAPrescanModuleList, data.ScanBPrescanModuleList, data.ScanAReport.StaticAnalysis.Modules, false)
+	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules, false)
 
 	if report.Len() > 0 {
-		color.Cyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned)")
-		fmt.Println("=================================================================================")
+		color.Cyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
+		fmt.Println("===============================================================================================================================")
 		fmt.Println(strings.Trim(report.String(), "\n"))
 	}
 }
 
-func compareTopLevelNotSelectedModules(report *strings.Builder, side string, prescanModulesInThisSide, prescanModulesInTheOtherSide PrescanModuleList, thisSideReportModuleList []SummaryReportModule) {
+func (data Data) reportDependencyModuleDifferences() {
+	var report strings.Builder
+
+	compareTopLevelNotSelectedModules(&report, "A", data.ScanAPrescanModuleList, data.ScanBPrescanModuleList, data.ScanAReport.StaticAnalysis.Modules, true)
+	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules, true)
+
+	if report.Len() > 0 {
+		color.Cyan("\nDifferences of Dependency Modules Not Selected As An Entry Point")
+		fmt.Println("================================================================")
+		fmt.Println(strings.Trim(report.String(), "\n"))
+	}
+}
+
+func compareTopLevelNotSelectedModules(report *strings.Builder, side string, prescanModulesInThisSide, prescanModulesInTheOtherSide PrescanModuleList, thisSideReportModuleList []SummaryReportModule, onlyDependencies bool) {
 	for _, prescanModuleFoundInThisSide := range prescanModulesInThisSide.Modules {
+		if prescanModuleFoundInThisSide.IsDependency != onlyDependencies {
+			continue
+		}
+
 		if prescanModulesInTheOtherSide.getFromName(prescanModuleFoundInThisSide.Name).Name != prescanModuleFoundInThisSide.Name {
 			var formattedSupportIssues = ""
 
@@ -328,12 +346,6 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 				formattedFatalError = fmt.Sprintf(", %s", color.RedString(fmt.Sprintf("Unscannable%s", getFatalReason(prescanModuleFoundInThisSide))))
 			}
 
-			var formattedUnselectedNonDependency = ""
-
-			if !prescanModuleFoundInThisSide.IsDependency && !prescanModuleFoundInThisSide.HasFatalErrors {
-				formattedUnselectedNonDependency = fmt.Sprintf(", %s", color.YellowString("Unselected Potential First Party Component"))
-			}
-
 			var formattedMissingSupportedFiles = ""
 
 			missingSupportedFileCount := getMissingSupportedFileCountFromPreScanModuleStatus(prescanModuleFoundInThisSide)
@@ -342,12 +354,11 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.YellowString("Missing Supporting Files = %d", missingSupportedFileCount))
 			}
 
-			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s%s, MD5 = %s, Platform = %s\n",
+			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s\n",
 				getFormattedOnlyInSideString(side),
 				prescanModuleFoundInThisSide.Name,
 				prescanModuleFoundInThisSide.Size,
 				formattedSupportIssues,
-				formattedUnselectedNonDependency,
 				formattedFatalError,
 				formattedMissingSupportedFiles,
 				prescanModuleFoundInThisSide.MD5,
