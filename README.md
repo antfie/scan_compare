@@ -77,7 +77,7 @@ Flaws: 13 total, 13 not mitigated
 
 Differences of Top-Level Modules Selected As An Entry Point
 ===========================================================
-Only in A: 'ch2 app.war' - Size = 2MB, Issues = 0, MD5 = 803c155a360d219460d2a59c81389833, Compiler = JAVAC_11, OS = Java J2SE 11, Architecture = JVM
+Only in A: 'app.war' - Size = 2MB, Issues = 0, MD5 = 803c155a360d219460d2a59c81389833, Compiler = JAVAC_11, OS = Java J2SE 11, Architecture = JVM
 Only in B: 'app-new.war' - Size = 1KB, Issues = 0, MD5 = da0099a578876c08b473a0df8ec589f4, Compiler = JAVAC_11, OS = Java J2SE 11, Architecture = JVM
 ```
 
