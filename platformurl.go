@@ -27,7 +27,7 @@ func parseAccountIdFromPlatformUrl(urlOrAccountId string) int {
 
 	var urlFragment = strings.Split(urlOrAccountId, "#")[1]
 
-	if strings.HasPrefix(urlFragment, "ReviewResultsStaticFlaws") || strings.HasPrefix(urlFragment, "AnalyzeAppModuleList") || strings.HasPrefix(urlFragment, "StaticOverview") {
+	if strings.HasPrefix(urlFragment, "ReviewResultsStaticFlaws") || strings.HasPrefix(urlFragment, "AnalyzeAppModuleList") || strings.HasPrefix(urlFragment, "StaticOverview") || strings.HasPrefix(urlFragment, "AnalyzeAppSourceFiles") || strings.HasPrefix(urlFragment, "ViewReportsResultSummary") || strings.HasPrefix(urlFragment, "ViewReportsDetailedReport") {
 		accountId, err := strconv.Atoi(strings.Split(urlFragment, ":")[1])
 
 		if err != nil {
@@ -55,7 +55,7 @@ func parseAppIdFromPlatformUrl(urlOrAppId string) int {
 
 	var urlFragment = strings.Split(urlOrAppId, "#")[1]
 
-	if strings.HasPrefix(urlFragment, "ReviewResultsStaticFlaws") || strings.HasPrefix(urlFragment, "AnalyzeAppModuleList") || strings.HasPrefix(urlFragment, "StaticOverview") {
+	if strings.HasPrefix(urlFragment, "ReviewResultsStaticFlaws") || strings.HasPrefix(urlFragment, "AnalyzeAppModuleList") || strings.HasPrefix(urlFragment, "StaticOverview") || strings.HasPrefix(urlFragment, "AnalyzeAppSourceFiles") || strings.HasPrefix(urlFragment, "ViewReportsResultSummary") || strings.HasPrefix(urlFragment, "ViewReportsDetailedReport") {
 		appId, err := strconv.Atoi(strings.Split(urlFragment, ":")[2])
 
 		if err != nil {
@@ -83,7 +83,7 @@ func parseBuildIdFromPlatformUrl(urlOrBuildId string) int {
 
 	var urlFragment = strings.Split(urlOrBuildId, "#")[1]
 
-	if strings.HasPrefix(urlFragment, "ReviewResultsStaticFlaws") || strings.HasPrefix(urlFragment, "AnalyzeAppModuleList") || strings.HasPrefix(urlFragment, "StaticOverview") {
+	if strings.HasPrefix(urlFragment, "ReviewResultsStaticFlaws") || strings.HasPrefix(urlFragment, "AnalyzeAppModuleList") || strings.HasPrefix(urlFragment, "StaticOverview") || strings.HasPrefix(urlFragment, "AnalyzeAppSourceFiles") || strings.HasPrefix(urlFragment, "ViewReportsResultSummary") || strings.HasPrefix(urlFragment, "ViewReportsDetailedReport") {
 		buildId, err := strconv.Atoi(strings.Split(urlFragment, ":")[3])
 
 		if err != nil {
