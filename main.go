@@ -25,16 +25,29 @@ func main() {
 
 	flag.Parse()
 
-	var apiId, apiKey = getCredentials(*vid, *vkey)
-	var api = API{apiId, apiKey}
+	if len(*scanA) < 1 && len(*scanB) < 1 {
+		color.Red("Error: No Veracode Platform URLs specified for scans \"A\" and \"B\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp... -b https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		print("\nUsage:\n")
+		flag.PrintDefaults()
+		return
+	}
 
 	if len(*scanA) < 1 {
-		panic("No Veracode Platform URL specified for scan \"A\". Expected flag \"-a https://analysiscenter.veracode.com/auth/index.jsp...\". Try -h for help.")
+		color.Red("Error: No Veracode Platform URL specified for scan \"A\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		print("\nUsage:\n")
+		flag.PrintDefaults()
+		return
 	}
 
 	if len(*scanB) < 1 {
-		panic("No Veracode Platform URL specified for scan \"B\". Expected flag \"-b https://analysiscenter.veracode.com/auth/index.jsp...\". Try -h for help.")
+		color.Red("Error: No Veracode Platform URL specified for scan \"B\". Expected flag \"-b https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		print("\nUsage:\n")
+		flag.PrintDefaults()
+		return
 	}
+
+	var apiId, apiKey = getCredentials(*vid, *vkey)
+	var api = API{apiId, apiKey}
 
 	scanAAppId := parseAppIdFromPlatformUrl(*scanA)
 	scanABuildId := parseBuildIdFromPlatformUrl(*scanA)
@@ -73,7 +86,7 @@ func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 	}
 
 	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
-		report.WriteString("The scan engine versions are different. This means there has been one or more deployments to the Veracode scan engine between these scans\n")
+		report.WriteString("The scan engine versions are different. This means there has been one or more deployments of the Veracode scan engine between these scans. This can sometimes explain why new flaws might be reported (due to improved scan coverage), and others are no longer reported (due to a reduction of Flase Positives)\n")
 	}
 
 	if report.Len() > 0 {
@@ -90,7 +103,7 @@ func (data Data) reportCommonalities() {
 		report.WriteString(fmt.Sprintf("Application: \"%s\"\n", data.ScanAReport.AppName))
 	}
 
-	if data.ScanAReport.SandboxId == data.ScanBReport.SandboxId {
+	if data.ScanAReport.SandboxId == data.ScanBReport.SandboxId && len(data.ScanAReport.SandboxName) > 0 {
 		report.WriteString(fmt.Sprintf("Sandbox: \"%s\"\n", data.ScanAReport.SandboxName))
 	}
 
@@ -129,7 +142,7 @@ func (data Data) reportScanADetails() {
 		fmt.Printf("Application: \"%s\"\n", data.ScanAReport.AppName)
 	}
 
-	if data.ScanAReport.SandboxId != data.ScanBReport.SandboxId {
+	if data.ScanAReport.SandboxId != data.ScanBReport.SandboxId && len(data.ScanAReport.SandboxName) > 0 {
 		fmt.Printf("Sandbox: \"%s\"\n", data.ScanBReport.SandboxName)
 	}
 
@@ -171,7 +184,7 @@ func (data Data) reportScanBDetails() {
 		fmt.Printf("Application: \"%s\"\n", data.ScanBReport.AppName)
 	}
 
-	if data.ScanAReport.SandboxId != data.ScanBReport.SandboxId {
+	if data.ScanAReport.SandboxId != data.ScanBReport.SandboxId && len(data.ScanBReport.SandboxName) > 0 {
 		fmt.Printf("Sandbox: \"%s\"\n", data.ScanBReport.SandboxName)
 	}
 
@@ -254,7 +267,7 @@ func getMissingSupportedFileCountFromPreScanModuleStatus(module PrescanModule) i
 func getFatalReason(module PrescanModule) string {
 	for _, issue := range strings.Split(module.Status, ",") {
 		if strings.HasPrefix(issue, "(Fatal)") {
-			return strings.Replace(issue, "(Fatal)", " - ", 1)
+			return strings.Replace(issue, "(Fatal)", ": ", 1)
 		}
 	}
 
@@ -329,9 +342,23 @@ func (data Data) reportDependencyModuleDifferences() {
 	}
 }
 
+func isModuleNotSelectedTopLevel(prescanModuleFoundInThisSide PrescanModule, thisSideReportModuleList []SummaryReportModule, onlyDependencies bool) bool {
+	if prescanModuleFoundInThisSide.IsDependency != onlyDependencies {
+		return false
+	}
+
+	for _, summaryReportModule := range thisSideReportModuleList {
+		if prescanModuleFoundInThisSide.Name == summaryReportModule.Name {
+			return false
+		}
+	}
+
+	return true
+}
+
 func compareTopLevelNotSelectedModules(report *strings.Builder, side string, prescanModulesInThisSide, prescanModulesInTheOtherSide PrescanModuleList, thisSideReportModuleList []SummaryReportModule, onlyDependencies bool) {
 	for _, prescanModuleFoundInThisSide := range prescanModulesInThisSide.Modules {
-		if prescanModuleFoundInThisSide.IsDependency != onlyDependencies {
+		if !isModuleNotSelectedTopLevel(prescanModuleFoundInThisSide, thisSideReportModuleList, onlyDependencies) {
 			continue
 		}
 
