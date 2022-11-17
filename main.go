@@ -14,8 +14,10 @@ type API struct {
 	key string
 }
 
+var AppVersion string = "DEV"
+
 func main() {
-	print("Scan Compare v1.2\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n")
+	fmt.Printf("Scan Compare %s\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n", AppVersion)
 	vid := flag.String("vid", "", "Veracode API ID - See https://docs.veracode.com/r/t_create_api_creds")
 	vkey := flag.String("vkey", "", "Veracode API key - See https://docs.veracode.com/r/t_create_api_creds")
 	scanA := flag.String("a", "", "Veracode Platform URL for scan \"A\"")
