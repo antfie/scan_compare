@@ -16,6 +16,10 @@ type API struct {
 
 var AppVersion string = "DEV"
 
+func colorPrintf(format string) {
+	color.New().Printf(format)
+}
+
 func main() {
 	fmt.Printf("Scan Compare %s\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n", AppVersion)
 	vid := flag.String("vid", "", "Veracode API ID - See https://docs.veracode.com/r/t_create_api_creds")
@@ -58,9 +62,9 @@ func main() {
 		panic("These are the same scans")
 	}
 
-	fmt.Printf("Comparing scan %s against scan %s\n",
+	colorPrintf(fmt.Sprintf("Comparing scan %s against scan %s\n",
 		color.GreenString("\"A\" (Build id = %d)", scanABuildId),
-		color.MagentaString("\"B\" (Build id = %d)", scanBBuildId))
+		color.MagentaString("\"B\" (Build id = %d)", scanBBuildId)))
 
 	data := api.getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId)
 
@@ -90,7 +94,7 @@ func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 	}
 
 	if report.Len() > 0 {
-		color.Cyan("Warnings")
+		color.Cyan("\nWarnings")
 		fmt.Println("========")
 		color.Yellow(report.String())
 	}
@@ -130,12 +134,12 @@ func (data Data) reportCommonalities() {
 	if report.Len() > 0 {
 		color.Cyan("\nIn common with both scans")
 		fmt.Println("=========================")
-		fmt.Println(report.String())
+		colorPrintf(report.String())
 	}
 }
 
 func (data Data) reportScanADetails() {
-	color.Green("Scan A")
+	color.Green("\nScan A")
 	fmt.Println("======")
 
 	if data.ScanAReport.AppName != data.ScanBReport.AppName {
@@ -227,7 +231,7 @@ func (data Data) reportTopLevelModuleDifferences() {
 	if report.Len() > 0 {
 		color.Cyan("\nDifferences of Top-Level Modules Selected As An Entry Point For Scanning")
 		fmt.Println("========================================================================")
-		fmt.Println(strings.Trim(report.String(), "\n"))
+		colorPrintf(report.String())
 	}
 }
 
@@ -325,7 +329,7 @@ func (data Data) reportNotSelectedModuleDifferences() {
 	if report.Len() > 0 {
 		color.Cyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
 		fmt.Println("===============================================================================================================================")
-		fmt.Println(strings.Trim(report.String(), "\n"))
+		colorPrintf(report.String())
 	}
 }
 
@@ -338,7 +342,7 @@ func (data Data) reportDependencyModuleDifferences() {
 	if report.Len() > 0 {
 		color.Cyan("\nDifferences of Dependency Modules Not Selected As An Entry Point")
 		fmt.Println("================================================================")
-		fmt.Println(strings.Trim(report.String(), "\n"))
+		colorPrintf(report.String())
 	}
 }
 
@@ -414,6 +418,6 @@ func (data Data) reportSummary() {
 	if report.Len() > 0 {
 		color.Cyan("\nSummary")
 		fmt.Print("========\n")
-		fmt.Println(report.String())
+		colorPrintf(report.String())
 	}
 }
