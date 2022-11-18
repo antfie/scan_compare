@@ -377,20 +377,26 @@ func reportDuplicateFiles(side string, prescanFileList PrescanFileList) {
 			continue
 		}
 
+		//md5s := []string{thisFile.MD5}
 		var md5s []string
+		md5s = append(md5s, thisFile.MD5)
+		var count = 0
 
 		for _, otherFile := range prescanFileList.Files {
 			if thisFile.Name == otherFile.Name {
-				if thisFile.MD5 != otherFile.MD5 {
-					if !isStringInStringArray(otherFile.MD5, md5s) {
-						md5s = append(md5s, otherFile.MD5)
-					}
+				count++
+				if !isStringInStringArray(otherFile.MD5, md5s) {
+					md5s = append(md5s, otherFile.MD5)
 				}
 			}
 		}
 
-		if len(md5s) > 0 {
-			report.WriteString(fmt.Sprintf("\"%s\": %d file(s) with the same name but different MD5 hashes\n", thisFile.Name, len(md5s)+1))
+		if len(md5s) > 1 {
+			if count == len(md5s) {
+				report.WriteString(fmt.Sprintf("\"%s\": %d occurances each with different MD5 hashes\n", thisFile.Name, count))
+			} else {
+				report.WriteString(fmt.Sprintf("\"%s\": %d occurances with %d different MD5 hashes\n", thisFile.Name, count, len(md5s)))
+			}
 		}
 
 		processedFiles = append(processedFiles, thisFile.Name)
