@@ -75,6 +75,8 @@ func main() {
 	data.reportTopLevelModuleDifferences()
 	data.reportNotSelectedModuleDifferences()
 	data.reportDependencyModuleDifferences()
+	reportDuplicateFiles("A", data.ScanAPrescanFileList)
+	reportDuplicateFiles("B", data.ScanBPrescanFileList)
 	data.reportSummary()
 }
 
@@ -207,6 +209,14 @@ func getFormattedSideString(side string) string {
 	}
 
 	return color.MagentaString("B")
+}
+
+func getFormattedSideStringWithMessage(side, message string) string {
+	if side == "A" {
+		return color.GreenString(message)
+	}
+
+	return color.MagentaString(message)
 }
 
 func getMissingSupportedFileCountFromPreScanModuleStatus(module PrescanModule) int {
@@ -355,6 +365,41 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 				prescanModuleFoundInThisSide.MD5,
 				prescanModuleFoundInThisSide.Platform))
 		}
+	}
+}
+
+func reportDuplicateFiles(side string, prescanFileList PrescanFileList) {
+	var report strings.Builder
+	var processedFiles []string
+
+	for _, thisFile := range prescanFileList.Files {
+		if isStringInStringArray(thisFile.Name, processedFiles) {
+			continue
+		}
+
+		var md5s []string
+
+		for _, otherFile := range prescanFileList.Files {
+			if thisFile.Name == otherFile.Name {
+				if thisFile.MD5 != otherFile.MD5 {
+					if !isStringInStringArray(otherFile.MD5, md5s) {
+						md5s = append(md5s, otherFile.MD5)
+					}
+				}
+			}
+		}
+
+		if len(md5s) > 0 {
+			report.WriteString(fmt.Sprintf("\"%s\": %d file(s) with the same name but different MD5 hashes\n", thisFile.Name, len(md5s)+1))
+		}
+
+		processedFiles = append(processedFiles, thisFile.Name)
+	}
+
+	if report.Len() > 0 {
+		colorPrintf(getFormattedSideStringWithMessage(side, fmt.Sprintf("\nDuplicate Files Within Scan %s\n", side)))
+		fmt.Print("=============================\n")
+		color.Yellow(report.String())
 	}
 }
 
