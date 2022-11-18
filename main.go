@@ -70,8 +70,8 @@ func main() {
 
 	data.reportOnWarnings(*scanA, *scanB)
 	data.reportCommonalities()
-	reportScanDetails("A", data.ScanAReport, data.ScanBReport, data.ScanAPrescanFileList, data.ScanBPrescanFileList)
-	reportScanDetails("B", data.ScanBReport, data.ScanAReport, data.ScanBPrescanFileList, data.ScanAPrescanFileList)
+	reportScanDetails("A", data.ScanAReport, data.ScanBReport, data.ScanAPrescanFileList, data.ScanBPrescanFileList, data.ScanAPrescanModuleList, data.ScanBPrescanModuleList)
+	reportScanDetails("B", data.ScanBReport, data.ScanAReport, data.ScanBPrescanFileList, data.ScanAPrescanFileList, data.ScanBPrescanModuleList, data.ScanAPrescanModuleList)
 	data.reportTopLevelModuleDifferences()
 	data.reportNotSelectedModuleDifferences()
 	data.reportDependencyModuleDifferences()
@@ -117,12 +117,12 @@ func (data Data) reportCommonalities() {
 		report.WriteString(fmt.Sprintf("Scan name: \"%s\"\n", data.ScanAReport.StaticAnalysis.ScanName))
 	}
 
-	if data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws {
-		report.WriteString(fmt.Sprintf("Flaws: %d total, %d not mitigated\n", data.ScanAReport.TotalFlaws, data.ScanAReport.UnmitigatedFlaws))
-	}
-
 	if len(data.ScanAPrescanFileList.Files) == len(data.ScanBPrescanFileList.Files) {
 		report.WriteString(fmt.Sprintf("Files uploaded: %d\n", len(data.ScanAPrescanFileList.Files)))
+	}
+
+	if len(data.ScanAPrescanModuleList.Modules) == len(data.ScanBPrescanModuleList.Modules) {
+		report.WriteString(fmt.Sprintf("total modules: %d\n", len(data.ScanAPrescanModuleList.Modules)))
 	}
 
 	if len(data.ScanAReport.StaticAnalysis.Modules) == len(data.ScanBReport.StaticAnalysis.Modules) {
@@ -133,6 +133,10 @@ func (data Data) reportCommonalities() {
 		report.WriteString(fmt.Sprintf("Engine version: %s\n", data.ScanAReport.StaticAnalysis.EngineVersion))
 	}
 
+	if data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws {
+		report.WriteString(fmt.Sprintf("Flaws: %d total, %d not mitigated\n", data.ScanAReport.TotalFlaws, data.ScanAReport.UnmitigatedFlaws))
+	}
+
 	if report.Len() > 0 {
 		color.Cyan("\nIn common with both scans")
 		fmt.Println("=========================")
@@ -140,7 +144,7 @@ func (data Data) reportCommonalities() {
 	}
 }
 
-func reportScanDetails(side string, thisDetailedReport, otherDetailedReport DetailedReport, thisPrescanFileList, otherPrescanFileList PrescanFileList) {
+func reportScanDetails(side string, thisDetailedReport, otherDetailedReport DetailedReport, thisPrescanFileList, otherPrescanFileList PrescanFileList, thisPrescanModuleList, otherPrescanModuleList PrescanModuleList) {
 	color.Magenta(fmt.Sprintf("\nScan %s", side))
 	fmt.Println("======")
 
@@ -158,24 +162,24 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 
 	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl())
 
-	if thisDetailedReport.StaticAnalysis.EngineVersion != otherDetailedReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: \"%s\"\n", thisDetailedReport.StaticAnalysis.EngineVersion)
-	}
-
 	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
 		fmt.Printf("Files uploaded: %d\n", len(thisPrescanFileList.Files))
+	}
+
+	if len(thisPrescanModuleList.Modules) != len(otherPrescanModuleList.Modules) {
+		fmt.Printf("total modules: %d\n", len(thisPrescanModuleList.Modules))
 	}
 
 	if len(thisDetailedReport.StaticAnalysis.Modules) != len(otherDetailedReport.StaticAnalysis.Modules) {
 		fmt.Printf("Top-level modules selected for analysis: %d\n", len(thisDetailedReport.StaticAnalysis.Modules))
 	}
 
-	fmt.Printf("Submitted: %s\n", thisDetailedReport.SubmittedDate)
-	fmt.Printf("Duration: %s\n", thisDetailedReport.Duration)
-
 	if thisDetailedReport.StaticAnalysis.EngineVersion != otherDetailedReport.StaticAnalysis.EngineVersion {
 		fmt.Printf("Engine version: %s\n", thisDetailedReport.StaticAnalysis.EngineVersion)
 	}
+
+	fmt.Printf("Submitted: %s\n", thisDetailedReport.SubmittedDate)
+	fmt.Printf("Duration: %s\n", thisDetailedReport.Duration)
 
 	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws) {
 		fmt.Printf("Flaws: %d total, %d mitigated\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws)
