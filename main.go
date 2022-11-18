@@ -133,8 +133,8 @@ func (data Data) reportCommonalities() {
 		report.WriteString(fmt.Sprintf("Engine version: %s\n", data.ScanAReport.StaticAnalysis.EngineVersion))
 	}
 
-	if data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws {
-		report.WriteString(fmt.Sprintf("Flaws: %d total, %d not mitigated\n", data.ScanAReport.TotalFlaws, data.ScanAReport.UnmitigatedFlaws))
+	if data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws && data.ScanAReport.getPolicyAffectingFlawCount() == data.ScanBReport.getPolicyAffectingFlawCount() && data.ScanAReport.getOpenPolicyAffectingFlawCount() == data.ScanBReport.getOpenPolicyAffectingFlawCount() && data.ScanAReport.getOpenNonPolicyAffectingFlawCount() == data.ScanBReport.getOpenNonPolicyAffectingFlawCount() {
+		report.WriteString(fmt.Sprintf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", data.ScanAReport.TotalFlaws, data.ScanAReport.TotalFlaws-data.ScanAReport.UnmitigatedFlaws, data.ScanAReport.getPolicyAffectingFlawCount(), data.ScanAReport.getOpenPolicyAffectingFlawCount(), data.ScanAReport.getOpenNonPolicyAffectingFlawCount()))
 	}
 
 	if report.Len() > 0 {
@@ -181,8 +181,8 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 	fmt.Printf("Submitted: %s\n", thisDetailedReport.SubmittedDate)
 	fmt.Printf("Duration: %s\n", thisDetailedReport.Duration)
 
-	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws) {
-		fmt.Printf("Flaws: %d total, %d mitigated\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws)
+	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws && thisDetailedReport.getPolicyAffectingFlawCount() == otherDetailedReport.getPolicyAffectingFlawCount() && thisDetailedReport.getOpenNonPolicyAffectingFlawCount() == otherDetailedReport.getOpenNonPolicyAffectingFlawCount()) {
+		fmt.Printf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws, thisDetailedReport.getPolicyAffectingFlawCount(), thisDetailedReport.getOpenPolicyAffectingFlawCount(), thisDetailedReport.getOpenNonPolicyAffectingFlawCount())
 	}
 }
 

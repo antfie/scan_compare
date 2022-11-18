@@ -21,6 +21,7 @@ type DetailedReport struct {
 	TotalFlaws           int                          `xml:"total_flaws,attr"`
 	UnmitigatedFlaws     int                          `xml:"flaws_not_mitigated,attr"`
 	StaticAnalysis       DetailedReportStaticAnalysis `xml:"static-analysis"`
+	Flaws                []DetailedReportFlaw         `xml:"severity>category>cwe>staticflaws>flaw"`
 	SubmittedDate        time.Time
 	Duration             time.Duration
 }
@@ -42,6 +43,21 @@ type DetailedReportModule struct {
 	Compiler     string   `xml:"compiler,attr"`
 	Os           string   `xml:"os,attr"`
 	Architecture string   `xml:"architecture,attr"`
+}
+
+type DetailedReportFlaw struct {
+	XMLName                 xml.Name `xml:"flaw"`
+	ID                      int      `xml:"issueid,attr"`
+	CWE                     string   `xml:"cweid,attr"`
+	AffectsPolicyCompliance bool     `xml:"affects_policy_compliance,attr"`
+	Module                  string   `xml:"module,attr"`
+	RemediationStatus       string   `xml:"remediation_status,attr"`
+	MitigationStatus        string   `xml:"mitigation_status,attr"`
+	SourceFile              string   `xml:"source_file,attr"`
+	LineNumber              int      `xml:"line,attr"`
+	ProcedureHash           string   `xml:"procedure_hash,attr"`
+	PrototypeHash           string   `xml:"prototype_hash,attr"`
+	StatementHash           string   `xml:"statement_hash,attr"`
 }
 
 func (api API) getDetailedReport(buildId int) DetailedReport {
@@ -67,4 +83,56 @@ func (report DetailedReport) getReviewModulesUrl() string {
 		report.AnalysisId,
 		report.StaticAnalysisUnitId,
 		report.SandboxId)
+}
+
+func (report DetailedReport) getPolicyAffectingFlawCount() int {
+	var count = 0
+
+	for _, flaw := range report.Flaws {
+		if flaw.AffectsPolicyCompliance {
+			count++
+		}
+	}
+
+	return count
+}
+
+func (report DetailedReport) getOpenPolicyAffectingFlawCount() int {
+	var count = 0
+
+	for _, flaw := range report.Flaws {
+		if flaw.RemediationStatus == "Fixed" {
+			continue
+		}
+
+		if !(flaw.MitigationStatus == "none" || flaw.MitigationStatus == "rejected") {
+			continue
+		}
+
+		if flaw.AffectsPolicyCompliance {
+			count++
+		}
+	}
+
+	return count
+}
+
+func (report DetailedReport) getOpenNonPolicyAffectingFlawCount() int {
+	var count = 0
+
+	for _, flaw := range report.Flaws {
+		if flaw.RemediationStatus == "Fixed" {
+			continue
+		}
+
+		if !(flaw.MitigationStatus == "none" || flaw.MitigationStatus == "rejected") {
+			continue
+		}
+
+		if !flaw.AffectsPolicyCompliance {
+			count++
+		}
+	}
+
+	return count
 }

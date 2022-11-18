@@ -12,7 +12,7 @@ Alternatively you can use environment variables (`VERACODE_API_KEY_ID` and `VERA
 
 ```
 ./scan_compare -h
-Scan Compare v1.0
+Scan Compare v1.x
 Copyright © Veracode, Inc. 2022. All Rights Reserved.
 This is an unofficial Veracode product. It does not come with any support or warrenty.
 
@@ -53,4 +53,6 @@ go run *.go
 
 ### Compiling
 
+```
 ./release.sh
+```
