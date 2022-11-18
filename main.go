@@ -145,8 +145,8 @@ func (data Data) reportCommonalities() {
 }
 
 func reportScanDetails(side string, thisDetailedReport, otherDetailedReport DetailedReport, thisPrescanFileList, otherPrescanFileList PrescanFileList, thisPrescanModuleList, otherPrescanModuleList PrescanModuleList) {
-	color.Magenta(fmt.Sprintf("\nScan %s", side))
-	fmt.Println("======")
+	colorPrintf(getFormattedSideStringWithMessage(side, fmt.Sprintf("\nScan %s", side)))
+	fmt.Println("\n======")
 
 	if thisDetailedReport.AppName != otherDetailedReport.AppName {
 		fmt.Printf("Application: \"%s\"\n", thisDetailedReport.AppName)
