@@ -2,7 +2,6 @@ package main
 
 import (
 	"sync"
-	"time"
 )
 
 type Data struct {
@@ -12,10 +11,6 @@ type Data struct {
 	ScanBPrescanFileList   PrescanFileList
 	ScanAPrescanModuleList PrescanModuleList
 	ScanBPrescanModuleList PrescanModuleList
-	ScanASubmittedDate     time.Time
-	ScanBSubmittedDate     time.Time
-	ScanADuration          time.Duration
-	ScanBDuration          time.Duration
 }
 
 func (api API) getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId int) Data {
@@ -61,10 +56,10 @@ func (api API) getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId int) D
 
 	wg.Wait()
 
-	data.ScanASubmittedDate = parseVeracodeDate(data.ScanAReport.StaticAnalysis.SubmittedDate).Local()
-	data.ScanBSubmittedDate = parseVeracodeDate(data.ScanBReport.StaticAnalysis.SubmittedDate).Local()
-	data.ScanADuration = parseVeracodeDate(data.ScanAReport.StaticAnalysis.PublishedDate).Local().Sub(data.ScanASubmittedDate)
-	data.ScanBDuration = parseVeracodeDate(data.ScanBReport.StaticAnalysis.PublishedDate).Local().Sub(data.ScanBSubmittedDate)
+	data.ScanAReport.SubmittedDate = parseVeracodeDate(data.ScanAReport.StaticAnalysis.SubmittedDate).Local()
+	data.ScanBReport.SubmittedDate = parseVeracodeDate(data.ScanBReport.StaticAnalysis.SubmittedDate).Local()
+	data.ScanAReport.Duration = parseVeracodeDate(data.ScanAReport.StaticAnalysis.PublishedDate).Local().Sub(data.ScanAReport.SubmittedDate)
+	data.ScanBReport.Duration = parseVeracodeDate(data.ScanBReport.StaticAnalysis.PublishedDate).Local().Sub(data.ScanBReport.SubmittedDate)
 
 	return data
 }

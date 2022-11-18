@@ -70,8 +70,8 @@ func main() {
 
 	data.reportOnWarnings(*scanA, *scanB)
 	data.reportCommonalities()
-	data.reportScanADetails()
-	data.reportScanBDetails()
+	reportScanDetails("A", data.ScanAReport, data.ScanBReport, data.ScanAPrescanFileList, data.ScanBPrescanFileList)
+	reportScanDetails("B", data.ScanBReport, data.ScanAReport, data.ScanBPrescanFileList, data.ScanAPrescanFileList)
 	data.reportTopLevelModuleDifferences()
 	data.reportNotSelectedModuleDifferences()
 	data.reportDependencyModuleDifferences()
@@ -138,87 +138,45 @@ func (data Data) reportCommonalities() {
 	}
 }
 
-func (data Data) reportScanADetails() {
-	color.Green("\nScan A")
+func reportScanDetails(side string, thisSumaryReport, otherSummaryReport SummaryReport, thisPrescanFileList, otherPrescanFileList PrescanFileList) {
+	color.Magenta(fmt.Sprintf("\nScan %s", side))
 	fmt.Println("======")
 
-	if data.ScanAReport.AppName != data.ScanBReport.AppName {
-		fmt.Printf("Application: \"%s\"\n", data.ScanAReport.AppName)
+	if thisSumaryReport.AppName != otherSummaryReport.AppName {
+		fmt.Printf("Application: \"%s\"\n", thisSumaryReport.AppName)
 	}
 
-	if data.ScanAReport.SandboxId != data.ScanBReport.SandboxId && len(data.ScanAReport.SandboxName) > 0 {
-		fmt.Printf("Sandbox: \"%s\"\n", data.ScanBReport.SandboxName)
+	if thisSumaryReport.SandboxId != otherSummaryReport.SandboxId && len(thisSumaryReport.SandboxName) > 0 {
+		fmt.Printf("Sandbox: \"%s\"\n", thisSumaryReport.SandboxName)
 	}
 
-	if data.ScanAReport.StaticAnalysis.ScanName != data.ScanBReport.StaticAnalysis.ScanName {
-		fmt.Printf("Scan name: \"%s\"\n", data.ScanAReport.StaticAnalysis.ScanName)
+	if thisSumaryReport.StaticAnalysis.ScanName != otherSummaryReport.StaticAnalysis.ScanName {
+		fmt.Printf("Scan name: \"%s\"\n", thisSumaryReport.StaticAnalysis.ScanName)
 	}
 
-	fmt.Printf("Review Modules URL: %s\n", data.ScanAReport.getReviewModulesUrl())
+	fmt.Printf("Review Modules URL: %s\n", thisSumaryReport.getReviewModulesUrl())
 
-	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: %s\n", data.ScanAReport.StaticAnalysis.EngineVersion)
+	if thisSumaryReport.StaticAnalysis.EngineVersion != otherSummaryReport.StaticAnalysis.EngineVersion {
+		fmt.Printf("Engine version: \"%s\"\n", thisSumaryReport.StaticAnalysis.EngineVersion)
 	}
 
-	if len(data.ScanAPrescanFileList.Files) != len(data.ScanBPrescanFileList.Files) {
-		fmt.Printf("Files uploaded: %d\n", len(data.ScanAPrescanFileList.Files))
+	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
+		fmt.Printf("Files uploaded: %d\n", len(thisPrescanFileList.Files))
 	}
 
-	if len(data.ScanAReport.StaticAnalysis.Modules) != len(data.ScanBReport.StaticAnalysis.Modules) {
-		fmt.Printf("Top-level modules selected for analysis: %d\n", len(data.ScanAReport.StaticAnalysis.Modules))
+	if len(thisSumaryReport.StaticAnalysis.Modules) != len(otherSummaryReport.StaticAnalysis.Modules) {
+		fmt.Printf("Top-level modules selected for analysis: %d\n", len(thisSumaryReport.StaticAnalysis.Modules))
 	}
 
-	fmt.Printf("Submitted: %s\n", data.ScanASubmittedDate)
-	fmt.Printf("Duration: %s\n", data.ScanADuration)
+	fmt.Printf("Submitted: %s\n", thisSumaryReport.SubmittedDate)
+	fmt.Printf("Duration: %s\n", thisSumaryReport.Duration)
 
-	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: %s\n", data.ScanAReport.StaticAnalysis.EngineVersion)
+	if thisSumaryReport.StaticAnalysis.EngineVersion != otherSummaryReport.StaticAnalysis.EngineVersion {
+		fmt.Printf("Engine version: %s\n", thisSumaryReport.StaticAnalysis.EngineVersion)
 	}
 
-	if !(data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws) {
-		fmt.Printf("Flaws: %d total, %d not mitigated\n", data.ScanAReport.TotalFlaws, data.ScanAReport.UnmitigatedFlaws)
-	}
-}
-
-func (data Data) reportScanBDetails() {
-	color.Magenta("\nScan B")
-	fmt.Println("======")
-
-	if data.ScanAReport.AppName != data.ScanBReport.AppName {
-		fmt.Printf("Application: \"%s\"\n", data.ScanBReport.AppName)
-	}
-
-	if data.ScanAReport.SandboxId != data.ScanBReport.SandboxId && len(data.ScanBReport.SandboxName) > 0 {
-		fmt.Printf("Sandbox: \"%s\"\n", data.ScanBReport.SandboxName)
-	}
-
-	if data.ScanAReport.StaticAnalysis.ScanName != data.ScanBReport.StaticAnalysis.ScanName {
-		fmt.Printf("Scan name: \"%s\"\n", data.ScanBReport.StaticAnalysis.ScanName)
-	}
-
-	fmt.Printf("Review Modules URL: %s\n", data.ScanBReport.getReviewModulesUrl())
-
-	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: \"%s\"\n", data.ScanBReport.StaticAnalysis.EngineVersion)
-	}
-
-	if len(data.ScanAPrescanFileList.Files) != len(data.ScanBPrescanFileList.Files) {
-		fmt.Printf("Files uploaded: %d\n", len(data.ScanBPrescanFileList.Files))
-	}
-
-	if len(data.ScanAReport.StaticAnalysis.Modules) != len(data.ScanBReport.StaticAnalysis.Modules) {
-		fmt.Printf("Top-level modules selected for analysis: %d\n", len(data.ScanBReport.StaticAnalysis.Modules))
-	}
-
-	fmt.Printf("Submitted: %s\n", data.ScanBSubmittedDate)
-	fmt.Printf("Duration: %s\n", data.ScanBDuration)
-
-	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: %s\n", data.ScanBReport.StaticAnalysis.EngineVersion)
-	}
-
-	if !(data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws) {
-		fmt.Printf("Flaws: %d total, %d not mitigated\n", data.ScanBReport.TotalFlaws, data.ScanBReport.UnmitigatedFlaws)
+	if !(thisSumaryReport.TotalFlaws == otherSummaryReport.TotalFlaws && thisSumaryReport.UnmitigatedFlaws == otherSummaryReport.UnmitigatedFlaws) {
+		fmt.Printf("Flaws: %d total, %d mitigated\n", thisSumaryReport.TotalFlaws, thisSumaryReport.TotalFlaws-thisSumaryReport.UnmitigatedFlaws)
 	}
 }
 
@@ -403,16 +361,16 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 func (data Data) reportSummary() {
 	var report strings.Builder
 
-	if data.ScanASubmittedDate.Before(data.ScanBSubmittedDate) {
-		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("B"), data.ScanBSubmittedDate.Sub(data.ScanASubmittedDate), getFormattedSideString("A")))
-	} else if data.ScanASubmittedDate.After(data.ScanBSubmittedDate) {
-		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("A"), data.ScanASubmittedDate.Sub(data.ScanBSubmittedDate), getFormattedSideString("B")))
+	if data.ScanAReport.SubmittedDate.Before(data.ScanBReport.SubmittedDate) {
+		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("B"), data.ScanBReport.SubmittedDate.Sub(data.ScanAReport.SubmittedDate), getFormattedSideString("A")))
+	} else if data.ScanAReport.SubmittedDate.After(data.ScanBReport.SubmittedDate) {
+		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("A"), data.ScanAReport.SubmittedDate.Sub(data.ScanBReport.SubmittedDate), getFormattedSideString("B")))
 	}
 
-	if data.ScanADuration > data.ScanBDuration {
-		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("A"), data.ScanADuration-data.ScanBDuration))
-	} else if data.ScanADuration < data.ScanBDuration {
-		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("B"), data.ScanBDuration-data.ScanADuration))
+	if data.ScanAReport.Duration > data.ScanBReport.Duration {
+		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("A"), data.ScanAReport.Duration-data.ScanBReport.Duration))
+	} else if data.ScanAReport.Duration < data.ScanBReport.Duration {
+		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("B"), data.ScanBReport.Duration-data.ScanAReport.Duration))
 	}
 
 	if report.Len() > 0 {

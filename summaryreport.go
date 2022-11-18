@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"time"
 )
 
 type SummaryReport struct {
@@ -20,6 +21,8 @@ type SummaryReport struct {
 	TotalFlaws           int                         `xml:"total_flaws,attr"`
 	UnmitigatedFlaws     int                         `xml:"flaws_not_mitigated,attr"`
 	StaticAnalysis       SummaryReportStaticAnalysis `xml:"static-analysis"`
+	SubmittedDate        time.Time
+	Duration             time.Duration
 }
 
 type SummaryReportStaticAnalysis struct {
