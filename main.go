@@ -138,45 +138,45 @@ func (data Data) reportCommonalities() {
 	}
 }
 
-func reportScanDetails(side string, thisSumaryReport, otherSummaryReport SummaryReport, thisPrescanFileList, otherPrescanFileList PrescanFileList) {
+func reportScanDetails(side string, thisDetailedReport, otherDetailedReport DetailedReport, thisPrescanFileList, otherPrescanFileList PrescanFileList) {
 	color.Magenta(fmt.Sprintf("\nScan %s", side))
 	fmt.Println("======")
 
-	if thisSumaryReport.AppName != otherSummaryReport.AppName {
-		fmt.Printf("Application: \"%s\"\n", thisSumaryReport.AppName)
+	if thisDetailedReport.AppName != otherDetailedReport.AppName {
+		fmt.Printf("Application: \"%s\"\n", thisDetailedReport.AppName)
 	}
 
-	if thisSumaryReport.SandboxId != otherSummaryReport.SandboxId && len(thisSumaryReport.SandboxName) > 0 {
-		fmt.Printf("Sandbox: \"%s\"\n", thisSumaryReport.SandboxName)
+	if thisDetailedReport.SandboxId != otherDetailedReport.SandboxId && len(thisDetailedReport.SandboxName) > 0 {
+		fmt.Printf("Sandbox: \"%s\"\n", thisDetailedReport.SandboxName)
 	}
 
-	if thisSumaryReport.StaticAnalysis.ScanName != otherSummaryReport.StaticAnalysis.ScanName {
-		fmt.Printf("Scan name: \"%s\"\n", thisSumaryReport.StaticAnalysis.ScanName)
+	if thisDetailedReport.StaticAnalysis.ScanName != otherDetailedReport.StaticAnalysis.ScanName {
+		fmt.Printf("Scan name: \"%s\"\n", thisDetailedReport.StaticAnalysis.ScanName)
 	}
 
-	fmt.Printf("Review Modules URL: %s\n", thisSumaryReport.getReviewModulesUrl())
+	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl())
 
-	if thisSumaryReport.StaticAnalysis.EngineVersion != otherSummaryReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: \"%s\"\n", thisSumaryReport.StaticAnalysis.EngineVersion)
+	if thisDetailedReport.StaticAnalysis.EngineVersion != otherDetailedReport.StaticAnalysis.EngineVersion {
+		fmt.Printf("Engine version: \"%s\"\n", thisDetailedReport.StaticAnalysis.EngineVersion)
 	}
 
 	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
 		fmt.Printf("Files uploaded: %d\n", len(thisPrescanFileList.Files))
 	}
 
-	if len(thisSumaryReport.StaticAnalysis.Modules) != len(otherSummaryReport.StaticAnalysis.Modules) {
-		fmt.Printf("Top-level modules selected for analysis: %d\n", len(thisSumaryReport.StaticAnalysis.Modules))
+	if len(thisDetailedReport.StaticAnalysis.Modules) != len(otherDetailedReport.StaticAnalysis.Modules) {
+		fmt.Printf("Top-level modules selected for analysis: %d\n", len(thisDetailedReport.StaticAnalysis.Modules))
 	}
 
-	fmt.Printf("Submitted: %s\n", thisSumaryReport.SubmittedDate)
-	fmt.Printf("Duration: %s\n", thisSumaryReport.Duration)
+	fmt.Printf("Submitted: %s\n", thisDetailedReport.SubmittedDate)
+	fmt.Printf("Duration: %s\n", thisDetailedReport.Duration)
 
-	if thisSumaryReport.StaticAnalysis.EngineVersion != otherSummaryReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: %s\n", thisSumaryReport.StaticAnalysis.EngineVersion)
+	if thisDetailedReport.StaticAnalysis.EngineVersion != otherDetailedReport.StaticAnalysis.EngineVersion {
+		fmt.Printf("Engine version: %s\n", thisDetailedReport.StaticAnalysis.EngineVersion)
 	}
 
-	if !(thisSumaryReport.TotalFlaws == otherSummaryReport.TotalFlaws && thisSumaryReport.UnmitigatedFlaws == otherSummaryReport.UnmitigatedFlaws) {
-		fmt.Printf("Flaws: %d total, %d mitigated\n", thisSumaryReport.TotalFlaws, thisSumaryReport.TotalFlaws-thisSumaryReport.UnmitigatedFlaws)
+	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws) {
+		fmt.Printf("Flaws: %d total, %d mitigated\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws)
 	}
 }
 
@@ -236,9 +236,9 @@ func getFatalReason(module PrescanModule) string {
 	return ""
 }
 
-func compareTopLevelSelectedModules(report *strings.Builder, side string, modulesInThisSideReport, modulesInTheOtherSideReport []SummaryReportModule, thisSidePrescanFileList PrescanFileList, thisSidePrescanModuleList PrescanModuleList) {
+func compareTopLevelSelectedModules(report *strings.Builder, side string, modulesInThisSideReport, modulesInTheOtherSideReport []DetailedReportModule, thisSidePrescanFileList PrescanFileList, thisSidePrescanModuleList PrescanModuleList) {
 	for _, moduleFoundInThisSide := range modulesInThisSideReport {
-		if !isModuleNameInSummaryReportModuleArray(moduleFoundInThisSide, modulesInTheOtherSideReport) {
+		if !isModuleNameInDetailedReportModuleArray(moduleFoundInThisSide, modulesInTheOtherSideReport) {
 			prescanModule := thisSidePrescanModuleList.getFromName(moduleFoundInThisSide.Name)
 			var formattedSupportIssues = ""
 
@@ -268,7 +268,7 @@ func compareTopLevelSelectedModules(report *strings.Builder, side string, module
 	}
 }
 
-func isModuleNameInSummaryReportModuleArray(module SummaryReportModule, modules []SummaryReportModule) bool {
+func isModuleNameInDetailedReportModuleArray(module DetailedReportModule, modules []DetailedReportModule) bool {
 	for _, moduleInList := range modules {
 		if module.Name == moduleInList.Name {
 			return true
@@ -304,13 +304,13 @@ func (data Data) reportDependencyModuleDifferences() {
 	}
 }
 
-func isModuleNotSelectedTopLevel(prescanModuleFoundInThisSide PrescanModule, thisSideReportModuleList []SummaryReportModule, onlyDependencies bool) bool {
+func isModuleNotSelectedTopLevel(prescanModuleFoundInThisSide PrescanModule, thisSideReportModuleList []DetailedReportModule, onlyDependencies bool) bool {
 	if prescanModuleFoundInThisSide.IsDependency != onlyDependencies {
 		return false
 	}
 
-	for _, summaryReportModule := range thisSideReportModuleList {
-		if prescanModuleFoundInThisSide.Name == summaryReportModule.Name {
+	for _, DetailedReportModule := range thisSideReportModuleList {
+		if prescanModuleFoundInThisSide.Name == DetailedReportModule.Name {
 			return false
 		}
 	}
@@ -318,7 +318,7 @@ func isModuleNotSelectedTopLevel(prescanModuleFoundInThisSide PrescanModule, thi
 	return true
 }
 
-func compareTopLevelNotSelectedModules(report *strings.Builder, side string, prescanModulesInThisSide, prescanModulesInTheOtherSide PrescanModuleList, thisSideReportModuleList []SummaryReportModule, onlyDependencies bool) {
+func compareTopLevelNotSelectedModules(report *strings.Builder, side string, prescanModulesInThisSide, prescanModulesInTheOtherSide PrescanModuleList, thisSideReportModuleList []DetailedReportModule, onlyDependencies bool) {
 	for _, prescanModuleFoundInThisSide := range prescanModulesInThisSide.Modules {
 		if !isModuleNotSelectedTopLevel(prescanModuleFoundInThisSide, thisSideReportModuleList, onlyDependencies) {
 			continue

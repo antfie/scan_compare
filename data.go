@@ -5,8 +5,8 @@ import (
 )
 
 type Data struct {
-	ScanAReport            SummaryReport
-	ScanBReport            SummaryReport
+	ScanAReport            DetailedReport
+	ScanBReport            DetailedReport
 	ScanAPrescanFileList   PrescanFileList
 	ScanBPrescanFileList   PrescanFileList
 	ScanAPrescanModuleList PrescanModuleList
@@ -21,18 +21,18 @@ func (api API) getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId int) D
 
 	go func() {
 		defer wg.Done()
-		data.ScanAReport = api.getSummaryReport(scanABuildId)
+		data.ScanAReport = api.getDetailedReport(scanABuildId)
 	}()
 
 	go func() {
 		defer wg.Done()
-		data.ScanBReport = api.getSummaryReport(scanBBuildId)
+		data.ScanBReport = api.getDetailedReport(scanBBuildId)
 	}()
 
 	wg.Wait()
 	wg.Add(4)
 
-	// We can't rely on the passed-in app IDs as they may not be present if not using a URL, so get the app ID from the summary report
+	// We can't rely on the passed-in app IDs as they may not be present if not using a URL, so get the app ID from the detailed report
 
 	go func() {
 		defer wg.Done()
