@@ -18,9 +18,11 @@ This is an unofficial Veracode product. It does not come with any support or war
 
 Usage of scan_compare:
   -a string
-        Veracode Platform URL for scan "A"
+        Veracode Platform URL or build ID for scan "A"
   -b string
-        Veracode Platform URL for scan "B"
+        Veracode Platform URL or build ID for scan "B"
+  -region string
+        Veracode Region [global, us, eu]
   -vid string
         Veracode API ID - See https://docs.veracode.com/r/t_create_api_creds
   -vkey string
