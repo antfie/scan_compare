@@ -3,10 +3,11 @@ package main
 import (
 	"bufio"
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 func getCredentials(id, key string) (string, string) {
@@ -27,19 +28,22 @@ func getCredentials(id, key string) (string, string) {
 	homePath, err := os.UserHomeDir()
 
 	if err != nil {
-		panic(err)
+		color.Red("Error: Could not locate your home directory")
+		os.Exit(1)
 	}
 
 	var credentialsFilePath = filepath.Join(homePath, ".veracode", "credentials")
 
 	if _, err := os.Stat(credentialsFilePath); errors.Is(err, os.ErrNotExist) {
-		log.Fatal("Could not find a Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.Red("Error: Could not find a Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		os.Exit(1)
 	}
 
 	file, err := os.Open(credentialsFilePath)
 
 	if err != nil {
-		panic("Could not open the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.Red("Error: Could not open the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		os.Exit(1)
 	}
 
 	defer file.Close()
@@ -68,9 +72,7 @@ func getCredentials(id, key string) (string, string) {
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
-
-	panic("Could not process the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+	color.Red("Error: Could not process the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+	os.Exit(1)
+	return "", ""
 }

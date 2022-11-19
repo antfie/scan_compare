@@ -2,16 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
-func platformUrlInvalid(url string) int {
-	panic(fmt.Sprintf("%s is not a valid or supported Veracode Platform URL", url))
+func platformUrlInvalid(url string) {
+	color.Red(fmt.Sprintf("%s is not a valid or supported Veracode Platform URL", url))
+	os.Exit(1)
 }
 
 func isPlatformURL(url string) bool {
-	return strings.HasPrefix(url, "https://analysiscenter.veracode.com/auth/index.jsp")
+	return strings.HasPrefix(url, "https://analysiscenter.veracode.com/auth/index.jsp") ||
+		strings.HasPrefix(url, "https://analysiscenter.veracode.us/auth/index.jsp") ||
+		strings.HasPrefix(url, "https://analysiscenter.veracode.eu/auth/index.jsp")
 }
 
 func isParseableURL(urlFragment string) bool {
@@ -30,6 +36,18 @@ func isParseableURL(urlFragment string) bool {
 		}
 	}
 	return false
+}
+
+func parseRegionFromUrl(url string) string {
+	if strings.HasPrefix(url, "https://analysiscenter.veracode.us") {
+		return "us"
+	}
+
+	if strings.HasPrefix(url, "https://analysiscenter.veracode.eu") {
+		return "eu"
+	}
+
+	return "global"
 }
 
 func parseAccountIdFromPlatformUrl(urlOrAccountId string) int {

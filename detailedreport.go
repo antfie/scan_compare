@@ -4,8 +4,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
+	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 type DetailedReport struct {
@@ -63,6 +67,11 @@ type DetailedReportFlaw struct {
 func (api API) getDetailedReport(buildId int) DetailedReport {
 	var url = fmt.Sprintf("https://analysiscenter.veracode.com/api/5.0/detailedreport.do?build_id=%d", buildId)
 	response := api.makeApiRequest(url, http.MethodGet)
+
+	if strings.Contains(string(response[:]), "<error>No report available.</error>") {
+		color.Red(fmt.Sprintf("Error: There was no detailed report for Build id %d. Has the scan finished?", buildId))
+		os.Exit(1)
+	}
 
 	report := DetailedReport{}
 	xml.Unmarshal(response, &report)

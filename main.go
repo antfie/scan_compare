@@ -3,16 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
 )
-
-type API struct {
-	id  string
-	key string
-}
 
 var AppVersion string = "DEV"
 
@@ -21,37 +17,66 @@ func colorPrintf(format string) {
 }
 
 func main() {
-	fmt.Printf("Scan Compare %s\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n", AppVersion)
+	fmt.Printf("Scan Compare v%s\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n", AppVersion)
 	vid := flag.String("vid", "", "Veracode API ID - See https://docs.veracode.com/r/t_create_api_creds")
 	vkey := flag.String("vkey", "", "Veracode API key - See https://docs.veracode.com/r/t_create_api_creds")
-	scanA := flag.String("a", "", "Veracode Platform URL for scan \"A\"")
-	scanB := flag.String("b", "", "Veracode Platform URL for scan \"B\"")
+	region := flag.String("region", "", "Veracode Region [global, us, eu]")
+	scanA := flag.String("a", "", "Veracode Platform URL or build ID for scan \"A\"")
+	scanB := flag.String("b", "", "Veracode Platform URL or build ID for scan \"B\"")
 
 	flag.Parse()
 
+	if !(*region == "" || *region == "global" || *region == "us" || *region == "eu") {
+		color.Red("Error: Invalid region. Must be either \"global\", \"us\" or \"eu\"")
+		print("\nUsage:\n")
+		flag.PrintDefaults()
+		return
+	}
+
 	if len(*scanA) < 1 && len(*scanB) < 1 {
-		color.Red("Error: No Veracode Platform URLs specified for scans \"A\" and \"B\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp... -b https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		color.Red("Error: No Veracode Platform URLs or build IDs specified for scans \"A\" and \"B\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp... -b https://analysiscenter.veracode.com/auth/index.jsp...\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
 	if len(*scanA) < 1 {
-		color.Red("Error: No Veracode Platform URL specified for scan \"A\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		color.Red("Error: No Veracode Platform URL or build ID specified for scan \"A\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp...\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
 	if len(*scanB) < 1 {
-		color.Red("Error: No Veracode Platform URL specified for scan \"B\". Expected flag \"-b https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		color.Red("Error: No Veracode Platform URL or build ID specified for scan \"B\". Expected flag \"-b https://analysiscenter.veracode.com/auth/index.jsp...\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
+	if parseRegionFromUrl(*scanA) != parseRegionFromUrl(*scanB) {
+		color.Red("Error: Cannot compare between different Veracode regions")
+		os.Exit(1)
+	}
+
+	if *region != "" &&
+		((strings.HasPrefix(*scanA, "https://") && parseRegionFromUrl(*scanA) != *region) ||
+			(strings.HasPrefix(*scanB, "https://") && parseRegionFromUrl(*scanB) != *region)) {
+		color.Red(fmt.Sprintf("Error: The region from the URL (%s) does not match that specified by the command line (%s)", parseRegionFromUrl(*scanA), *region))
+		os.Exit(1)
+	}
+
+	var regionTouse string
+
+	// Command line region takes precidence
+	if *region == "" {
+		regionTouse = parseRegionFromUrl(*scanA)
+	} else {
+		regionTouse = *region
+	}
+
 	var apiId, apiKey = getCredentials(*vid, *vkey)
-	var api = API{apiId, apiKey}
+	var api = API{apiId, apiKey, regionTouse}
 
 	scanAAppId := parseAppIdFromPlatformUrl(*scanA)
 	scanABuildId := parseBuildIdFromPlatformUrl(*scanA)
@@ -59,12 +84,14 @@ func main() {
 	scanBBuildId := parseBuildIdFromPlatformUrl(*scanB)
 
 	if scanABuildId == scanBBuildId {
-		panic("These are the same scans")
+		color.Red("Error: These are both the same scan")
+		os.Exit(1)
 	}
 
-	colorPrintf(fmt.Sprintf("Comparing scan %s against scan %s\n",
+	colorPrintf(fmt.Sprintf("Comparing scan %s against scan %s in the %s region\n",
 		color.GreenString("\"A\" (Build id = %d)", scanABuildId),
-		color.MagentaString("\"B\" (Build id = %d)", scanBBuildId)))
+		color.MagentaString("\"B\" (Build id = %d)", scanBBuildId),
+		api.region))
 
 	data := api.getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId)
 
@@ -85,14 +112,14 @@ func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 
 	if isPlatformURL(scanAUrl) && isPlatformURL(scanBUrl) {
 		if parseAccountIdFromPlatformUrl(scanAUrl) != parseAccountIdFromPlatformUrl(scanBUrl) {
-			report.WriteString("These scans are from different accounts\n")
+			report.WriteString("* These scans are from different accounts\n")
 		} else if parseAppIdFromPlatformUrl(scanAUrl) != parseAppIdFromPlatformUrl(scanBUrl) {
-			report.WriteString("These scans are from different application profiles\n")
+			report.WriteString("* These scans are from different application profiles\n")
 		}
 	}
 
 	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
-		report.WriteString("The scan engine versions are different. This means there has been one or more deployments of the Veracode scan engine between these scans. This can sometimes explain why new flaws might be reported (due to improved scan coverage), and others are no longer reported (due to a reduction of Flase Positives)\n")
+		report.WriteString("* The scan engine versions are different. This means there has been one or more deployments of the Veracode scan engine between these scans. This can sometimes explain why new flaws might be reported (due to improved scan coverage), and others are no longer reported (due to a reduction of Flase Positives)\n")
 	}
 
 	if report.Len() > 0 {
