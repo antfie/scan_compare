@@ -35,7 +35,7 @@ Usage of scan_compare:
 ./scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22132159:22103486:22119136::::5000002 -b https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22131974:22103301:22118951::::4999988
 ```
 
-If you know the build ids you can use them instead of URLs like so:
+If you know the build IDs you can use them instead of URLs like so:
 
 ```
 ./scan_compare -a 22132159 -b 22131974
