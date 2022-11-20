@@ -1,5 +1,3 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/antfie/scan_compare)](https://goreportcard.com/report/github.com/antfie/scan_compare)
-
 # Veracode Scan Compare
 
 This is an unofficial Veracode product. It does not come with any support or warrenty.
