@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -104,6 +105,9 @@ func main() {
 	data.reportDependencyModuleDifferences()
 	reportDuplicateFiles("A", data.ScanAPrescanFileList)
 	reportDuplicateFiles("B", data.ScanBPrescanFileList)
+	data.reportPolicyAffectingFlawDifferences()
+	data.reportNonPolicyAffectingFlawDifferences()
+	data.reportCloseFlawDifferences()
 	data.reportSummary()
 }
 
@@ -295,12 +299,19 @@ func compareTopLevelSelectedModules(report *strings.Builder, side string, module
 				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.YellowString("Missing Supporting Files = %d", missingSupportedFileCount))
 			}
 
-			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s, MD5 = %s, Platform = %s / %s / %s\n",
+			var formattedIsDependency = ""
+
+			if prescanModule.IsDependency {
+				formattedIsDependency = color.YellowString("Module is Dependency")
+			}
+
+			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s / %s / %s\n",
 				getFormattedOnlyInSideString(side),
 				moduleFoundInThisSide.Name,
 				prescanModule.Size,
 				formattedSupportIssues,
 				formattedMissingSupportedFiles,
+				formattedIsDependency,
 				thisSidePrescanFileList.getFromName(moduleFoundInThisSide.Name).MD5,
 				moduleFoundInThisSide.Architecture,
 				moduleFoundInThisSide.Os,
@@ -437,6 +448,122 @@ func reportDuplicateFiles(side string, prescanFileList PrescanFileList) {
 		colorPrintf(getFormattedSideStringWithMessage(side, fmt.Sprintf("\nDuplicate Files Within Scan %s\n", side)))
 		fmt.Print("=============================\n")
 		color.Yellow(report.String())
+	}
+}
+
+func isFlawInReport(flawId int, report DetailedReport) bool {
+	for _, flaw := range report.Flaws {
+		if flaw.ID == flawId {
+			return true
+		}
+	}
+
+	return false
+}
+
+func getSortedIntArrayAsSFormattedString(list []int) string {
+	sort.Ints(list[:])
+	var output []string
+	for _, x := range list {
+		output = append(output, strconv.Itoa(x))
+	}
+
+	return strings.Join(output, ",")
+}
+
+func (data Data) reportPolicyAffectingFlawDifferences() {
+	var report strings.Builder
+
+	compareFlaws(&report, "A", data.ScanAReport, data.ScanBReport, true, false)
+	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, true, false)
+
+	if report.Len() > 0 {
+		color.Cyan("\nPolicy Affecting Open Flaw Differences")
+		fmt.Print("======================================\n")
+		colorPrintf(report.String())
+	}
+}
+
+func (data Data) reportNonPolicyAffectingFlawDifferences() {
+	var report strings.Builder
+
+	compareFlaws(&report, "A", data.ScanAReport, data.ScanBReport, false, false)
+	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, false, false)
+
+	if report.Len() > 0 {
+		color.Cyan("\nNon Policy Affecting Open Flaw Differences")
+		fmt.Print("==========================================\n")
+		colorPrintf(report.String())
+	}
+}
+
+func (data Data) reportCloseFlawDifferences() {
+	var report strings.Builder
+
+	compareFlaws(&report, "A", data.ScanAReport, data.ScanBReport, false, true)
+	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, false, true)
+
+	if report.Len() > 0 {
+		color.Cyan("\nClosed Flaw Differences")
+		fmt.Print("=======================\n")
+		colorPrintf(report.String())
+	}
+}
+
+func isInIntArray(x int, y []int) bool {
+	for _, z := range y {
+		if x == z {
+			return true
+		}
+	}
+
+	return false
+}
+
+func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSideReport DetailedReport, policyAffecting bool, onlyClosed bool) {
+	var cwes []int
+	for _, thisSideFlaw := range thisSideReport.Flaws {
+		if !isInIntArray(thisSideFlaw.CWE, cwes) {
+			cwes = append(cwes, thisSideFlaw.CWE)
+		}
+	}
+
+	sort.Ints(cwes[:])
+
+	for _, cwe := range cwes {
+		var flawsOnlyInThisScan []int
+
+		for _, thisSideFlaw := range thisSideReport.Flaws {
+			if thisSideFlaw.CWE != cwe {
+				continue
+			}
+
+			if onlyClosed {
+				if thisSideFlaw.isFlawOpen() {
+					continue
+				}
+			} else {
+				if policyAffecting && !(thisSideFlaw.isFlawOpen() && thisSideFlaw.AffectsPolicyCompliance) {
+					continue
+				}
+
+				if !policyAffecting && !(thisSideFlaw.isFlawOpen() && !thisSideFlaw.AffectsPolicyCompliance) {
+					continue
+				}
+			}
+
+			if !isFlawInReport(thisSideFlaw.ID, otherSideReport) {
+				flawsOnlyInThisScan = append(flawsOnlyInThisScan, thisSideFlaw.ID)
+			}
+		}
+
+		if len(flawsOnlyInThisScan) > 0 {
+			report.WriteString(fmt.Sprintf("%s: %dx CWE-%d = %s\n",
+				getFormattedOnlyInSideString(side),
+				len(flawsOnlyInThisScan),
+				cwe,
+				getSortedIntArrayAsSFormattedString(flawsOnlyInThisScan)))
+		}
 	}
 }
 

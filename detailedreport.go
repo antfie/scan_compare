@@ -52,7 +52,7 @@ type DetailedReportModule struct {
 type DetailedReportFlaw struct {
 	XMLName                 xml.Name `xml:"flaw"`
 	ID                      int      `xml:"issueid,attr"`
-	CWE                     string   `xml:"cweid,attr"`
+	CWE                     int      `xml:"cweid,attr"`
 	AffectsPolicyCompliance bool     `xml:"affects_policy_compliance,attr"`
 	Module                  string   `xml:"module,attr"`
 	RemediationStatus       string   `xml:"remediation_status,attr"`
@@ -106,19 +106,23 @@ func (report DetailedReport) getPolicyAffectingFlawCount() int {
 	return count
 }
 
+func (flaw DetailedReportFlaw) isFlawOpen() bool {
+	if flaw.RemediationStatus == "Fixed" {
+		return false
+	}
+
+	if !(flaw.MitigationStatus == "none" || flaw.MitigationStatus == "rejected") {
+		return false
+	}
+
+	return true
+}
+
 func (report DetailedReport) getOpenPolicyAffectingFlawCount() int {
 	var count = 0
 
 	for _, flaw := range report.Flaws {
-		if flaw.RemediationStatus == "Fixed" {
-			continue
-		}
-
-		if !(flaw.MitigationStatus == "none" || flaw.MitigationStatus == "rejected") {
-			continue
-		}
-
-		if flaw.AffectsPolicyCompliance {
+		if flaw.isFlawOpen() && flaw.AffectsPolicyCompliance {
 			count++
 		}
 	}
@@ -130,15 +134,8 @@ func (report DetailedReport) getOpenNonPolicyAffectingFlawCount() int {
 	var count = 0
 
 	for _, flaw := range report.Flaws {
-		if flaw.RemediationStatus == "Fixed" {
-			continue
-		}
 
-		if !(flaw.MitigationStatus == "none" || flaw.MitigationStatus == "rejected") {
-			continue
-		}
-
-		if !flaw.AffectsPolicyCompliance {
+		if flaw.isFlawOpen() && !flaw.AffectsPolicyCompliance {
 			count++
 		}
 	}
