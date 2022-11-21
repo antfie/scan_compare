@@ -28,7 +28,7 @@ func (api API) makeApiRequest(apiUrl, httpMethod string) []byte {
 	parsedUrl, err := url.Parse(apiUrl)
 
 	if err != nil {
-		color.Red("Error: Invalid API URL")
+		color.HiRed("Error: Invalid API URL")
 		os.Exit(1)
 	}
 
@@ -36,14 +36,14 @@ func (api API) makeApiRequest(apiUrl, httpMethod string) []byte {
 	req, err := http.NewRequest(httpMethod, parsedUrl.String(), nil)
 
 	if err != nil {
-		color.Red("Error: Could not create API request")
+		color.HiRed("Error: Could not create API request")
 		os.Exit(1)
 	}
 
 	authorizationHeader, err := hmac.CalculateAuthorizationHeader(parsedUrl, httpMethod, api.id, api.key)
 
 	if err != nil {
-		color.Red("Error: Could not calculate the authorization header")
+		color.HiRed("Error: Could not calculate the authorization header")
 		os.Exit(1)
 	}
 
@@ -53,26 +53,35 @@ func (api API) makeApiRequest(apiUrl, httpMethod string) []byte {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		color.Red("Error: There was a problem communicating with the API. Please check your connectivity and the service status page at https://status.veracode.com")
+		color.HiRed("Error: There was a problem communicating with the API. Please check your connectivity and the service status page at https://status.veracode.com")
 		os.Exit(1)
 	}
 
 	if resp.StatusCode == 401 {
-		color.Red("Error: You are not authorized to perform this action. Please check your credentials are valid for this Veracode region and that you have the correct permissions. For help contact your Veracode administrator.")
+		if strings.HasSuffix(parsedUrl.Path, "getmaintenancescheduleinfo.do") {
+			color.HiRed("Error: There was a problem with your credentials. Please check your credentials are valid for this Veracode region and that you have the correct permissions. For help contact your Veracode administrator.")
+		} else {
+			color.HiRed("Error: You are not authorized to perform this action. Please check your credentials are valid for this Veracode region and that you have the correct permissions. For help contact your Veracode administrator.")
+		}
+
 		os.Exit(1)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		color.Red(fmt.Sprintf("Error: API request returned status of %s", resp.Status))
+		color.HiRed(fmt.Sprintf("Error: API request returned status of %s", resp.Status))
 		os.Exit(1)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		color.Red("Error: There was a problem processing the API response. Please check your connectivity and the service status page at https://status.veracode.com")
+		color.HiRed("Error: There was a problem processing the API response. Please check your connectivity and the service status page at https://status.veracode.com")
 		os.Exit(1)
 	}
 
 	return body
+}
+
+func (api API) assertCredentialsWork() {
+	api.makeApiRequest("https://analysiscenter.veracode.com/api/3.0/getmaintenancescheduleinfo.do", http.MethodGet)
 }

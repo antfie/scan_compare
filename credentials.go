@@ -28,21 +28,21 @@ func getCredentials(id, key string) (string, string) {
 	homePath, err := os.UserHomeDir()
 
 	if err != nil {
-		color.Red("Error: Could not locate your home directory")
+		color.HiRed("Error: Could not locate your home directory")
 		os.Exit(1)
 	}
 
 	var credentialsFilePath = filepath.Join(homePath, ".veracode", "credentials")
 
 	if _, err := os.Stat(credentialsFilePath); errors.Is(err, os.ErrNotExist) {
-		color.Red("Error: Could not find a Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.HiRed("Error: Could not find a Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
 		os.Exit(1)
 	}
 
 	file, err := os.Open(credentialsFilePath)
 
 	if err != nil {
-		color.Red("Error: Could not open the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.HiRed("Error: Could not open the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
 		os.Exit(1)
 	}
 
@@ -72,7 +72,7 @@ func getCredentials(id, key string) (string, string) {
 		}
 	}
 
-	color.Red("Error: Could not process the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+	color.HiRed("Error: Could not process the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
 	os.Exit(1)
 	return "", ""
 }

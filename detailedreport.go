@@ -69,7 +69,7 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 	response := api.makeApiRequest(url, http.MethodGet)
 
 	if strings.Contains(string(response[:]), "<error>No report available.</error>") {
-		color.Red(fmt.Sprintf("Error: There was no detailed report for Build id %d. Has the scan finished?", buildId))
+		color.HiRed(fmt.Sprintf("Error: There was no detailed report for Build id %d. Has the scan finished?", buildId))
 		os.Exit(1)
 	}
 

@@ -28,56 +28,56 @@ func main() {
 	flag.Parse()
 
 	if !(*region == "" || *region == "global" || *region == "us" || *region == "eu") {
-		color.Red("Error: Invalid region. Must be either \"global\", \"us\" or \"eu\"")
+		color.HiRed("Error: Invalid region. Must be either \"global\", \"us\" or \"eu\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
 	if len(*scanA) < 1 && len(*scanB) < 1 {
-		color.Red("Error: No Veracode Platform URLs or build IDs specified for scans \"A\" and \"B\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp... -b https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		color.HiRed("Error: No Veracode Platform URLs or build IDs specified for scans \"A\" and \"B\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp... -b https://analysiscenter.veracode.com/auth/index.jsp...\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
 	if len(*scanA) < 1 {
-		color.Red("Error: No Veracode Platform URL or build ID specified for scan \"A\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		color.HiRed("Error: No Veracode Platform URL or build ID specified for scan \"A\". Expected: \"scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp...\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
 	if len(*scanB) < 1 {
-		color.Red("Error: No Veracode Platform URL or build ID specified for scan \"B\". Expected flag \"-b https://analysiscenter.veracode.com/auth/index.jsp...\"")
+		color.HiRed("Error: No Veracode Platform URL or build ID specified for scan \"B\". Expected flag \"-b https://analysiscenter.veracode.com/auth/index.jsp...\"")
 		print("\nUsage:\n")
 		flag.PrintDefaults()
 		return
 	}
 
 	if parseRegionFromUrl(*scanA) != parseRegionFromUrl(*scanB) {
-		color.Red("Error: Cannot compare between different Veracode regions")
+		color.HiRed("Error: Cannot compare between different Veracode regions")
 		os.Exit(1)
 	}
 
 	if *region != "" &&
 		((strings.HasPrefix(*scanA, "https://") && parseRegionFromUrl(*scanA) != *region) ||
 			(strings.HasPrefix(*scanB, "https://") && parseRegionFromUrl(*scanB) != *region)) {
-		color.Red(fmt.Sprintf("Error: The region from the URL (%s) does not match that specified by the command line (%s)", parseRegionFromUrl(*scanA), *region))
+		color.HiRed(fmt.Sprintf("Error: The region from the URL (%s) does not match that specified by the command line (%s)", parseRegionFromUrl(*scanA), *region))
 		os.Exit(1)
 	}
 
-	var regionTouse string
+	var regionToUse string
 
 	// Command line region takes precidence
 	if *region == "" {
-		regionTouse = parseRegionFromUrl(*scanA)
+		regionToUse = parseRegionFromUrl(*scanA)
 	} else {
-		regionTouse = *region
+		regionToUse = *region
 	}
 
 	var apiId, apiKey = getCredentials(*vid, *vkey)
-	var api = API{apiId, apiKey, regionTouse}
+	var api = API{apiId, apiKey, regionToUse}
 
 	scanAAppId := parseAppIdFromPlatformUrl(*scanA)
 	scanABuildId := parseBuildIdFromPlatformUrl(*scanA)
@@ -85,13 +85,15 @@ func main() {
 	scanBBuildId := parseBuildIdFromPlatformUrl(*scanB)
 
 	if scanABuildId == scanBBuildId {
-		color.Red("Error: These are both the same scan")
+		color.HiRed("Error: These are both the same scan")
 		os.Exit(1)
 	}
 
+	api.assertCredentialsWork()
+
 	colorPrintf(fmt.Sprintf("Comparing scan %s against scan %s in the %s region\n",
-		color.GreenString("\"A\" (Build id = %d)", scanABuildId),
-		color.MagentaString("\"B\" (Build id = %d)", scanBBuildId),
+		color.HiGreenString("\"A\" (Build id = %d)", scanABuildId),
+		color.HiMagentaString("\"B\" (Build id = %d)", scanBBuildId),
 		api.region))
 
 	data := api.getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId)
@@ -127,9 +129,9 @@ func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 	}
 
 	if report.Len() > 0 {
-		color.Cyan("\nWarnings")
+		color.HiCyan("\nWarnings")
 		fmt.Println("========")
-		color.Yellow(report.String())
+		color.HiYellow(report.String())
 	}
 }
 
@@ -169,7 +171,7 @@ func (data Data) reportCommonalities() {
 	}
 
 	if report.Len() > 0 {
-		color.Cyan("\nIn common with both scans")
+		color.HiCyan("\nIn common with both scans")
 		fmt.Println("=========================")
 		colorPrintf(report.String())
 	}
@@ -224,7 +226,7 @@ func (data Data) reportTopLevelModuleDifferences() {
 	compareTopLevelSelectedModules(&report, "B", data.ScanBReport.StaticAnalysis.Modules, data.ScanAReport.StaticAnalysis.Modules, data.ScanBPrescanFileList, data.ScanBPrescanModuleList)
 
 	if report.Len() > 0 {
-		color.Cyan("\nDifferences of Top-Level Modules Selected As An Entry Point For Scanning")
+		color.HiCyan("\nDifferences of Top-Level Modules Selected As An Entry Point For Scanning")
 		fmt.Println("========================================================================")
 		colorPrintf(report.String())
 	}
@@ -232,26 +234,26 @@ func (data Data) reportTopLevelModuleDifferences() {
 
 func getFormattedOnlyInSideString(side string) string {
 	if side == "A" {
-		return color.GreenString("Only in A")
+		return color.HiGreenString("Only in A")
 	}
 
-	return color.MagentaString("Only in B")
+	return color.HiMagentaString("Only in B")
 }
 
 func getFormattedSideString(side string) string {
 	if side == "A" {
-		return color.GreenString("A")
+		return color.HiGreenString("A")
 	}
 
-	return color.MagentaString("B")
+	return color.HiMagentaString("B")
 }
 
 func getFormattedSideStringWithMessage(side, message string) string {
 	if side == "A" {
-		return color.GreenString(message)
+		return color.HiGreenString(message)
 	}
 
-	return color.MagentaString(message)
+	return color.HiMagentaString(message)
 }
 
 func getMissingSupportedFileCountFromPreScanModuleStatus(module PrescanModule) int {
@@ -288,7 +290,7 @@ func compareTopLevelSelectedModules(report *strings.Builder, side string, module
 			var formattedSupportIssues = ""
 
 			if len(prescanModule.Issues) > 0 {
-				formattedSupportIssues = fmt.Sprintf(", %s", color.YellowString("Support issues = %d", len(prescanModule.Issues)))
+				formattedSupportIssues = fmt.Sprintf(", %s", color.HiYellowString("Support issues = %d", len(prescanModule.Issues)))
 			}
 
 			var formattedMissingSupportedFiles = ""
@@ -296,13 +298,13 @@ func compareTopLevelSelectedModules(report *strings.Builder, side string, module
 			missingSupportedFileCount := getMissingSupportedFileCountFromPreScanModuleStatus(prescanModule)
 
 			if missingSupportedFileCount > 1 {
-				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.YellowString("Missing Supporting Files = %d", missingSupportedFileCount))
+				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.HiYellowString("Missing Supporting Files = %d", missingSupportedFileCount))
 			}
 
 			var formattedIsDependency = ""
 
 			if prescanModule.IsDependency {
-				formattedIsDependency = color.YellowString("Module is Dependency")
+				formattedIsDependency = color.HiYellowString("Module is Dependency")
 			}
 
 			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s / %s / %s\n",
@@ -337,7 +339,7 @@ func (data Data) reportNotSelectedModuleDifferences() {
 	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules, false)
 
 	if report.Len() > 0 {
-		color.Cyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
+		color.HiCyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
 		fmt.Println("===============================================================================================================================")
 		colorPrintf(report.String())
 	}
@@ -350,7 +352,7 @@ func (data Data) reportDependencyModuleDifferences() {
 	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules, true)
 
 	if report.Len() > 0 {
-		color.Cyan("\nDifferences of Dependency Modules Not Selected As An Entry Point")
+		color.HiCyan("\nDifferences of Dependency Modules Not Selected As An Entry Point")
 		fmt.Println("================================================================")
 		colorPrintf(report.String())
 	}
@@ -380,13 +382,13 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 			var formattedSupportIssues = ""
 
 			if len(prescanModuleFoundInThisSide.Issues) > 0 {
-				formattedSupportIssues = fmt.Sprintf(", %s", color.YellowString("Support issues = %d", len(prescanModuleFoundInThisSide.Issues)))
+				formattedSupportIssues = fmt.Sprintf(", %s", color.HiYellowString("Support issues = %d", len(prescanModuleFoundInThisSide.Issues)))
 			}
 
 			var formattedFatalError = ""
 
 			if prescanModuleFoundInThisSide.HasFatalErrors {
-				formattedFatalError = fmt.Sprintf(", %s", color.RedString(fmt.Sprintf("Unscannable%s", getFatalReason(prescanModuleFoundInThisSide))))
+				formattedFatalError = fmt.Sprintf(", %s", color.HiRedString(fmt.Sprintf("Unscannable%s", getFatalReason(prescanModuleFoundInThisSide))))
 			}
 
 			var formattedMissingSupportedFiles = ""
@@ -394,7 +396,7 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 			missingSupportedFileCount := getMissingSupportedFileCountFromPreScanModuleStatus(prescanModuleFoundInThisSide)
 
 			if missingSupportedFileCount > 1 {
-				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.YellowString("Missing Supporting Files = %d", missingSupportedFileCount))
+				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.HiYellowString("Missing Supporting Files = %d", missingSupportedFileCount))
 			}
 
 			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s\n",
@@ -447,7 +449,7 @@ func reportDuplicateFiles(side string, prescanFileList PrescanFileList) {
 	if report.Len() > 0 {
 		colorPrintf(getFormattedSideStringWithMessage(side, fmt.Sprintf("\nDuplicate Files Within Scan %s\n", side)))
 		fmt.Print("=============================\n")
-		color.Yellow(report.String())
+		color.HiYellow(report.String())
 	}
 }
 
@@ -478,7 +480,7 @@ func (data Data) reportPolicyAffectingFlawDifferences() {
 	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, true, false)
 
 	if report.Len() > 0 {
-		color.Cyan("\nPolicy Affecting Open Flaw Differences")
+		color.HiCyan("\nPolicy Affecting Open Flaw Differences")
 		fmt.Print("======================================\n")
 		colorPrintf(report.String())
 	}
@@ -491,7 +493,7 @@ func (data Data) reportNonPolicyAffectingFlawDifferences() {
 	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, false, false)
 
 	if report.Len() > 0 {
-		color.Cyan("\nNon Policy Affecting Open Flaw Differences")
+		color.HiCyan("\nNon Policy Affecting Open Flaw Differences")
 		fmt.Print("==========================================\n")
 		colorPrintf(report.String())
 	}
@@ -504,7 +506,7 @@ func (data Data) reportCloseFlawDifferences() {
 	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, false, true)
 
 	if report.Len() > 0 {
-		color.Cyan("\nClosed Flaw Differences")
+		color.HiCyan("\nClosed Flaw Differences")
 		fmt.Print("=======================\n")
 		colorPrintf(report.String())
 	}
@@ -583,7 +585,7 @@ func (data Data) reportSummary() {
 	}
 
 	if report.Len() > 0 {
-		color.Cyan("\nSummary")
+		color.HiCyan("\nSummary")
 		fmt.Print("========\n")
 		colorPrintf(report.String())
 	}

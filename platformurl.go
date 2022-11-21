@@ -10,7 +10,7 @@ import (
 )
 
 func platformUrlInvalid(url string) {
-	color.Red(fmt.Sprintf("%s is not a valid or supported Veracode Platform URL", url))
+	color.HiRed(fmt.Sprintf("%s is not a valid or supported Veracode Platform URL", url))
 	os.Exit(1)
 }
 
