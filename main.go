@@ -11,8 +11,6 @@ import (
 	"github.com/fatih/color"
 )
 
-var AppVersion string = "DEV"
-
 func colorPrintf(format string) {
 	color.New().Printf(format)
 }
@@ -75,6 +73,8 @@ func main() {
 	} else {
 		regionToUse = *region
 	}
+
+	notifyOfUpdates()
 
 	var apiId, apiKey = getCredentials(*vid, *vkey)
 	var api = API{apiId, apiKey, regionToUse}
