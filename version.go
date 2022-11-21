@@ -58,6 +58,6 @@ func notifyOfUpdates() {
 	}
 
 	if latestReleasedVersion > appVeresion {
-		color.HiYellow(fmt.Sprintf("Please upgrade to the latest version of this tool (v%s) by visiting https://github.com/antfie/scan_compare/releases/latest", response["tag_name"]))
+		color.HiYellow(fmt.Sprintf("Please upgrade to the latest version of this tool (v%s) by visiting https://github.com/antfie/scan_compare/releases/latest\n", response["tag_name"]))
 	}
 }
