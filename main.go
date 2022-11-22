@@ -167,7 +167,13 @@ func (data Data) reportCommonalities() {
 	}
 
 	if data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws && data.ScanAReport.getPolicyAffectingFlawCount() == data.ScanBReport.getPolicyAffectingFlawCount() && data.ScanAReport.getOpenPolicyAffectingFlawCount() == data.ScanBReport.getOpenPolicyAffectingFlawCount() && data.ScanAReport.getOpenNonPolicyAffectingFlawCount() == data.ScanBReport.getOpenNonPolicyAffectingFlawCount() {
-		report.WriteString(fmt.Sprintf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", data.ScanAReport.TotalFlaws, data.ScanAReport.TotalFlaws-data.ScanAReport.UnmitigatedFlaws, data.ScanAReport.getPolicyAffectingFlawCount(), data.ScanAReport.getOpenPolicyAffectingFlawCount(), data.ScanAReport.getOpenNonPolicyAffectingFlawCount()))
+		flawsFormatted := fmt.Sprintf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", data.ScanAReport.TotalFlaws, data.ScanAReport.TotalFlaws-data.ScanAReport.UnmitigatedFlaws, data.ScanAReport.getPolicyAffectingFlawCount(), data.ScanAReport.getOpenPolicyAffectingFlawCount(), data.ScanAReport.getOpenNonPolicyAffectingFlawCount())
+
+		if data.ScanAReport.TotalFlaws == 0 {
+			report.WriteString(color.HiYellowString(flawsFormatted))
+		} else {
+			report.WriteString(flawsFormatted)
+		}
 	}
 
 	if report.Len() > 0 {
@@ -215,7 +221,13 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 	fmt.Printf("Duration: %s\n", thisDetailedReport.Duration)
 
 	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws && thisDetailedReport.getPolicyAffectingFlawCount() == otherDetailedReport.getPolicyAffectingFlawCount() && thisDetailedReport.getOpenNonPolicyAffectingFlawCount() == otherDetailedReport.getOpenNonPolicyAffectingFlawCount()) {
-		fmt.Printf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws, thisDetailedReport.getPolicyAffectingFlawCount(), thisDetailedReport.getOpenPolicyAffectingFlawCount(), thisDetailedReport.getOpenNonPolicyAffectingFlawCount())
+		flawsFormatted := fmt.Sprintf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws, thisDetailedReport.getPolicyAffectingFlawCount(), thisDetailedReport.getOpenPolicyAffectingFlawCount(), thisDetailedReport.getOpenNonPolicyAffectingFlawCount())
+
+		if thisDetailedReport.TotalFlaws == 0 {
+			color.HiYellow(flawsFormatted)
+		} else {
+			fmt.Print(flawsFormatted)
+		}
 	}
 }
 
