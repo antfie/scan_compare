@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-VERSION="1.11"
+VERSION="1.12"
 FLAGS="-X main.AppVersion=$VERSION -s -w"
 
 env GOOS=darwin GOARCH=arm64 go build -ldflags="$FLAGS" -trimpath -o "dist/scan_compare-mac-arm64" .

@@ -107,6 +107,7 @@ func main() {
 	data.reportDependencyModuleDifferences()
 	reportDuplicateFiles("A", data.ScanAPrescanFileList)
 	reportDuplicateFiles("B", data.ScanBPrescanFileList)
+	data.reportModuleDifferences()
 	data.reportPolicyAffectingFlawDifferences()
 	data.reportNonPolicyAffectingFlawDifferences()
 	data.reportCloseFlawDifferences()
@@ -316,7 +317,7 @@ func compareTopLevelSelectedModules(report *strings.Builder, side string, module
 			var formattedIsDependency = ""
 
 			if prescanModule.IsDependency {
-				formattedIsDependency = color.HiYellowString("Module is Dependency")
+				formattedIsDependency = fmt.Sprintf(", %s", color.HiYellowString("Module is Dependency"))
 			}
 
 			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s / %s / %s\n",
@@ -433,9 +434,7 @@ func reportDuplicateFiles(side string, prescanFileList PrescanFileList) {
 			continue
 		}
 
-		//md5s := []string{thisFile.MD5}
-		var md5s []string
-		md5s = append(md5s, thisFile.MD5)
+		md5s := []string{thisFile.MD5}
 		var count = 0
 
 		for _, otherFile := range prescanFileList.Files {
@@ -532,6 +531,66 @@ func isInIntArray(x int, y []int) bool {
 	}
 
 	return false
+}
+
+func getNonDuplicatedFileNames(fileList PrescanFileList) []string {
+	var duplicateFiles []string
+	var processedFiles []string
+
+	for _, file := range fileList.Files {
+		if isStringInStringArray(file.Name, processedFiles) && !isStringInStringArray(file.Name, duplicateFiles) {
+			duplicateFiles = append(duplicateFiles, file.Name)
+		}
+
+		processedFiles = append(processedFiles, file.Name)
+	}
+
+	var nonDuplicatedFiles []string
+
+	for _, file := range fileList.Files {
+		if !isStringInStringArray(file.Name, duplicateFiles) {
+			nonDuplicatedFiles = append(nonDuplicatedFiles, file.Name)
+		}
+	}
+
+	return nonDuplicatedFiles
+}
+
+func (data Data) reportModuleDifferences() {
+	var report strings.Builder
+
+	var scanANonDuplicatedFiles = getNonDuplicatedFileNames(data.ScanAPrescanFileList)
+	var scanBNonDuplicatedFiles = getNonDuplicatedFileNames(data.ScanBPrescanFileList)
+
+	for _, thisFile := range data.ScanAPrescanFileList.Files {
+		if !isStringInStringArray(thisFile.Name, scanANonDuplicatedFiles) {
+			continue
+		}
+
+		if !isStringInStringArray(thisFile.Name, scanBNonDuplicatedFiles) {
+			continue
+		}
+
+		for _, otherFile := range data.ScanBPrescanFileList.Files {
+			if thisFile.Name == otherFile.Name {
+				if thisFile.MD5 != otherFile.MD5 {
+					report.WriteString(
+						fmt.Sprintf("\"%s\" %s: MD5 = %s, %s: MD5 = %s \n",
+							thisFile.Name,
+							getFormattedSideString("A"),
+							thisFile.MD5,
+							getFormattedSideString("B"),
+							otherFile.MD5))
+				}
+			}
+		}
+	}
+
+	if report.Len() > 0 {
+		color.HiCyan("\nModule Differences (Ignoring any duplicates)")
+		fmt.Print("============================================\n")
+		colorPrintf(report.String())
+	}
 }
 
 func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSideReport DetailedReport, policyAffecting bool, onlyClosed bool) {
