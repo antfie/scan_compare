@@ -59,9 +59,9 @@ func (api API) makeApiRequest(apiUrl, httpMethod string) []byte {
 
 	if resp.StatusCode == 401 {
 		if strings.HasSuffix(parsedUrl.Path, "getmaintenancescheduleinfo.do") {
-			color.HiRed("Error: There was a problem with your credentials. Please check your credentials are valid for this Veracode region and that you have the correct permissions. For help contact your Veracode administrator.")
+			color.HiRed("Error: There was a problem with your credentials. Please check your credentials are valid for this Veracode region. For help contact your Veracode administrator.")
 		} else {
-			color.HiRed("Error: You are not authorized to perform this action. Please check your credentials are valid for this Veracode region and that you have the correct permissions. For help contact your Veracode administrator.")
+			color.HiRed("Error: You are not authorized to perform this action. Please check you have the \"Results API\" user role set. For help contact your Veracode administrator and refer to https://docs.veracode.com/r/c_API_roles_details")
 		}
 
 		os.Exit(1)
