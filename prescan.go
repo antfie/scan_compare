@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 type PrescanModuleList struct {
@@ -53,4 +54,14 @@ func (moduleList PrescanModuleList) getFromName(moduleName string) PrescanModule
 	}
 
 	return PrescanModule{}
+}
+
+func (module PrescanModule) getFatalReason() string {
+	for _, issue := range strings.Split(module.Status, ",") {
+		if strings.HasPrefix(issue, "(Fatal)") {
+			return strings.Replace(issue, "(Fatal)", ": ", 1)
+		}
+	}
+
+	return ""
 }
