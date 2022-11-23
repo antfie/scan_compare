@@ -9,8 +9,20 @@ import (
 	"github.com/fatih/color"
 )
 
+var supportedPages = []string{
+	"ReviewResultsStaticFlaws",
+	"ReviewResultsAllFlaws",
+	"AnalyzeAppModuleList",
+	"StaticOverview",
+	"AnalyzeAppSourceFiles",
+	"ViewReportsResultSummary",
+	"ViewReportsDetailedReport"}
+
 func platformUrlInvalid(url string) {
-	color.HiRed(fmt.Sprintf("%s is not a valid or supported Veracode Platform URL", url))
+	color.HiRed(
+		fmt.Sprintf("%s is not a valid or supported Veracode Platform URL.\nThis tool requires a URL to one of the following Veracode Platform pages: %s",
+			url,
+			strings.Join(supportedPages, ", ")))
 	os.Exit(1)
 }
 
@@ -21,14 +33,6 @@ func isPlatformURL(url string) bool {
 }
 
 func isParseableURL(urlFragment string) bool {
-	var supportedPages = []string{
-		"ReviewResultsStaticFlaws",
-		"ReviewResultsAllFlaws",
-		"AnalyzeAppModuleList",
-		"StaticOverview",
-		"AnalyzeAppSourceFiles",
-		"ViewReportsResultSummary",
-		"ViewReportsDetailedReport"}
 
 	for _, page := range supportedPages {
 		if strings.HasPrefix(urlFragment, page) {
