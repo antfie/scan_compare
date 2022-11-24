@@ -41,6 +41,12 @@ If you know the build IDs you can use them instead of URLs like so:
 ./scan_compare -a 22132159 -b 22131974
 ```
 
+Using Docker:
+
+```
+docker run -t -v "$(pwd)/app:/app" antfie/scan_compare
+```
+
 ## Example Output
 
 ![Screenshot](./docs/images/screenshot.png)
