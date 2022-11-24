@@ -44,7 +44,7 @@ If you know the build IDs you can use them instead of URLs like so:
 Using Docker:
 
 ```
-docker run -t -v "$(pwd)/app:/app" antfie/scan_compare
+docker run -t -v "$HOME/.veracode:/.veracode" antfie/scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22132159:22103486:22119136::::5000002 -b https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22131974:22103301:22118951::::4999988
 ```
 
 ## Example Output
