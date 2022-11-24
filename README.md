@@ -1,3 +1,7 @@
+![Go Version](https://img.shields.io/github/go-mod/go-version/antfie/scan_compare)
+![Docker Image Size](https://img.shields.io/docker/image-size/antfie/scan_compare/latest)
+![Downloads](https://img.shields.io/github/downloads/antfie/scan_compare/total)
+
 # Veracode Scan Compare
 
 This is an unofficial Veracode product. It does not come with any support or warrenty.
