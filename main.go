@@ -182,6 +182,10 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 	colorPrintf(getFormattedSideStringWithMessage(side, fmt.Sprintf("\nScan %s", side)))
 	fmt.Println("\n======")
 
+	if thisDetailedReport.AccountId != otherDetailedReport.AccountId {
+		fmt.Printf("Account ID: %d\n", thisDetailedReport.AccountId)
+	}
+
 	if thisDetailedReport.AppName != otherDetailedReport.AppName {
 		fmt.Printf("Application: \"%s\"\n", thisDetailedReport.AppName)
 	}
