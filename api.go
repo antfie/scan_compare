@@ -67,6 +67,11 @@ func (api API) makeApiRequest(apiUrl, httpMethod string) []byte {
 		os.Exit(1)
 	}
 
+	if resp.StatusCode == 403 {
+		color.HiRed("Error: This request was forbidden. Ensure you can view these scans within the Veracode Platform. For help contact your Veracode administrator and refer to https://docs.veracode.com/r/c_API_roles_details")
+		os.Exit(1)
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		color.HiRed(fmt.Sprintf("Error: API request returned status of %s", resp.Status))
 		os.Exit(1)
