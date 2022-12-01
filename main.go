@@ -134,35 +134,35 @@ func (data Data) reportCommonalities() {
 	var report strings.Builder
 
 	if data.ScanAReport.AppName == data.ScanBReport.AppName {
-		report.WriteString(fmt.Sprintf("Application: \"%s\"\n", data.ScanAReport.AppName))
+		report.WriteString(fmt.Sprintf("Application:        \"%s\"\n", data.ScanAReport.AppName))
 	}
 
 	if data.ScanAReport.SandboxId == data.ScanBReport.SandboxId && len(data.ScanAReport.SandboxName) > 0 {
-		report.WriteString(fmt.Sprintf("Sandbox: \"%s\"\n", data.ScanAReport.SandboxName))
+		report.WriteString(fmt.Sprintf("Sandbox:            \"%s\"\n", data.ScanAReport.SandboxName))
 	}
 
 	if data.ScanAReport.StaticAnalysis.ScanName == data.ScanBReport.StaticAnalysis.ScanName {
-		report.WriteString(fmt.Sprintf("Scan name: \"%s\"\n", data.ScanAReport.StaticAnalysis.ScanName))
+		report.WriteString(fmt.Sprintf("Scan name:          \"%s\"\n", data.ScanAReport.StaticAnalysis.ScanName))
 	}
 
 	if len(data.ScanAPrescanFileList.Files) == len(data.ScanBPrescanFileList.Files) {
-		report.WriteString(fmt.Sprintf("Files uploaded: %d\n", len(data.ScanAPrescanFileList.Files)))
+		report.WriteString(fmt.Sprintf("Files uploaded:     %d\n", len(data.ScanAPrescanFileList.Files)))
 	}
 
 	if len(data.ScanAPrescanModuleList.Modules) == len(data.ScanBPrescanModuleList.Modules) {
-		report.WriteString(fmt.Sprintf("total modules: %d\n", len(data.ScanAPrescanModuleList.Modules)))
+		report.WriteString(fmt.Sprintf("Total modules:      %d\n", len(data.ScanAPrescanModuleList.Modules)))
 	}
 
 	if len(data.ScanAReport.StaticAnalysis.Modules) == len(data.ScanBReport.StaticAnalysis.Modules) {
-		report.WriteString(fmt.Sprintf("Top-level modules selected for analysis: %d\n", len(data.ScanAReport.StaticAnalysis.Modules)))
+		report.WriteString(fmt.Sprintf("Modules selected:   %d\n", len(data.ScanAReport.StaticAnalysis.Modules)))
 	}
 
 	if data.ScanAReport.StaticAnalysis.EngineVersion == data.ScanBReport.StaticAnalysis.EngineVersion {
-		report.WriteString(fmt.Sprintf("Engine version: %s\n", data.ScanAReport.StaticAnalysis.EngineVersion))
+		report.WriteString(fmt.Sprintf("Engine version:     %s\n", data.ScanAReport.StaticAnalysis.EngineVersion))
 	}
 
 	if data.ScanAReport.TotalFlaws == data.ScanBReport.TotalFlaws && data.ScanAReport.UnmitigatedFlaws == data.ScanBReport.UnmitigatedFlaws && data.ScanAReport.getPolicyAffectingFlawCount() == data.ScanBReport.getPolicyAffectingFlawCount() && data.ScanAReport.getOpenPolicyAffectingFlawCount() == data.ScanBReport.getOpenPolicyAffectingFlawCount() && data.ScanAReport.getOpenNonPolicyAffectingFlawCount() == data.ScanBReport.getOpenNonPolicyAffectingFlawCount() {
-		flawsFormatted := fmt.Sprintf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", data.ScanAReport.TotalFlaws, data.ScanAReport.TotalFlaws-data.ScanAReport.UnmitigatedFlaws, data.ScanAReport.getPolicyAffectingFlawCount(), data.ScanAReport.getOpenPolicyAffectingFlawCount(), data.ScanAReport.getOpenNonPolicyAffectingFlawCount())
+		flawsFormatted := fmt.Sprintf("Flaws:              %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", data.ScanAReport.TotalFlaws, data.ScanAReport.TotalFlaws-data.ScanAReport.UnmitigatedFlaws, data.ScanAReport.getPolicyAffectingFlawCount(), data.ScanAReport.getOpenPolicyAffectingFlawCount(), data.ScanAReport.getOpenNonPolicyAffectingFlawCount())
 
 		if data.ScanAReport.TotalFlaws == 0 {
 			report.WriteString(color.HiYellowString(flawsFormatted))
@@ -183,44 +183,44 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 	fmt.Println("\n======")
 
 	if thisDetailedReport.AccountId != otherDetailedReport.AccountId {
-		fmt.Printf("Account ID: %d\n", thisDetailedReport.AccountId)
+		fmt.Printf("Account ID:         %d\n", thisDetailedReport.AccountId)
 	}
 
 	if thisDetailedReport.AppName != otherDetailedReport.AppName {
-		fmt.Printf("Application: \"%s\"\n", thisDetailedReport.AppName)
+		fmt.Printf("Application:        \"%s\"\n", thisDetailedReport.AppName)
 	}
 
 	if thisDetailedReport.SandboxId != otherDetailedReport.SandboxId && len(thisDetailedReport.SandboxName) > 0 {
-		fmt.Printf("Sandbox: \"%s\"\n", thisDetailedReport.SandboxName)
+		fmt.Printf("Sandbox:            \"%s\"\n", thisDetailedReport.SandboxName)
 	}
 
 	if thisDetailedReport.StaticAnalysis.ScanName != otherDetailedReport.StaticAnalysis.ScanName {
-		fmt.Printf("Scan name: \"%s\"\n", thisDetailedReport.StaticAnalysis.ScanName)
+		fmt.Printf("Scan name:          \"%s\"\n", thisDetailedReport.StaticAnalysis.ScanName)
 	}
 
 	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl())
 
 	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
-		fmt.Printf("Files uploaded: %d\n", len(thisPrescanFileList.Files))
+		fmt.Printf("Files uploaded:     %d\n", len(thisPrescanFileList.Files))
 	}
 
 	if len(thisPrescanModuleList.Modules) != len(otherPrescanModuleList.Modules) {
-		fmt.Printf("total modules: %d\n", len(thisPrescanModuleList.Modules))
+		fmt.Printf("Total modules:      %d\n", len(thisPrescanModuleList.Modules))
 	}
 
 	if len(thisDetailedReport.StaticAnalysis.Modules) != len(otherDetailedReport.StaticAnalysis.Modules) {
-		fmt.Printf("Top-level modules selected for analysis: %d\n", len(thisDetailedReport.StaticAnalysis.Modules))
+		fmt.Printf("Modules selected:   %d\n", len(thisDetailedReport.StaticAnalysis.Modules))
 	}
 
 	if thisDetailedReport.StaticAnalysis.EngineVersion != otherDetailedReport.StaticAnalysis.EngineVersion {
-		fmt.Printf("Engine version: %s\n", thisDetailedReport.StaticAnalysis.EngineVersion)
+		fmt.Printf("Engine version:     %s\n", thisDetailedReport.StaticAnalysis.EngineVersion)
 	}
 
-	fmt.Printf("Submitted: %s\n", thisDetailedReport.SubmittedDate)
-	fmt.Printf("Duration: %s\n", thisDetailedReport.Duration)
+	fmt.Printf("Submitted:          %s\n", thisDetailedReport.SubmittedDate)
+	fmt.Printf("Duration:           %s\n", thisDetailedReport.Duration)
 
 	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws && thisDetailedReport.getPolicyAffectingFlawCount() == otherDetailedReport.getPolicyAffectingFlawCount() && thisDetailedReport.getOpenNonPolicyAffectingFlawCount() == otherDetailedReport.getOpenNonPolicyAffectingFlawCount()) {
-		flawsFormatted := fmt.Sprintf("Flaws: %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws, thisDetailedReport.getPolicyAffectingFlawCount(), thisDetailedReport.getOpenPolicyAffectingFlawCount(), thisDetailedReport.getOpenNonPolicyAffectingFlawCount())
+		flawsFormatted := fmt.Sprintf("Flaws:              %d total, %d mitigated, %d policy affecting, %d open affecting policy, %d open not affecting policy\n", thisDetailedReport.TotalFlaws, thisDetailedReport.TotalFlaws-thisDetailedReport.UnmitigatedFlaws, thisDetailedReport.getPolicyAffectingFlawCount(), thisDetailedReport.getOpenPolicyAffectingFlawCount(), thisDetailedReport.getOpenNonPolicyAffectingFlawCount())
 
 		if thisDetailedReport.TotalFlaws == 0 {
 			color.HiYellow(flawsFormatted)
