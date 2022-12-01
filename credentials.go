@@ -10,7 +10,19 @@ import (
 	"github.com/fatih/color"
 )
 
+func formatCredential(credential string) string {
+	var parts = strings.Split(credential, "-")
+	if len(parts) == 2 {
+		return parts[1]
+	}
+
+	return credential
+}
+
 func getCredentials(id, key string) (string, string) {
+	id = formatCredential(id)
+	key = formatCredential(key)
+
 	// First try CLI flags
 	if len(id) == 32 && len(key) == 128 {
 		return id, key
@@ -37,6 +49,9 @@ func getCredentials(id, key string) (string, string) {
 	// Then try environment variables
 	id = os.Getenv("VERACODE_API_KEY_ID")
 	key = os.Getenv("VERACODE_API_KEY_SECRET")
+
+	id = formatCredential(id)
+	key = formatCredential(key)
 
 	if len(id) == 32 && len(key) == 128 {
 		return id, key
@@ -108,6 +123,9 @@ func getCredentials(id, key string) (string, string) {
 				}
 
 				if len(id) > 0 && len(key) > 0 {
+					id = formatCredential(id)
+					key = formatCredential(key)
+
 					if len(id) != 32 {
 						color.HiRed("Error: Invalid value for veracode_api_key_id in file \"%s\"", credentialsFilePath)
 						os.Exit(1)
