@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -216,7 +217,7 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 		fmt.Printf("Engine version:     %s\n", thisDetailedReport.StaticAnalysis.EngineVersion)
 	}
 
-	fmt.Printf("Submitted:          %s\n", thisDetailedReport.SubmittedDate)
+	fmt.Printf("Submitted:          %s (%s ago)\n", thisDetailedReport.SubmittedDate, time.Since(thisDetailedReport.SubmittedDate))
 	fmt.Printf("Duration:           %s\n", thisDetailedReport.Duration)
 
 	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws && thisDetailedReport.getPolicyAffectingFlawCount() == otherDetailedReport.getPolicyAffectingFlawCount() && thisDetailedReport.getOpenNonPolicyAffectingFlawCount() == otherDetailedReport.getOpenNonPolicyAffectingFlawCount()) {
