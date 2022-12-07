@@ -14,6 +14,7 @@ func main() {
 	fmt.Printf("Scan Compare v%s\nCopyright © Veracode, Inc. 2022. All Rights Reserved.\nThis is an unofficial Veracode product. It does not come with any support or warrenty.\n\n", AppVersion)
 	vid := flag.String("vid", "", "Veracode API ID - See https://docs.veracode.com/r/t_create_api_creds")
 	vkey := flag.String("vkey", "", "Veracode API key - See https://docs.veracode.com/r/t_create_api_creds")
+	profile := flag.String("profile", "default", "Veracode credential profile - See https://docs.veracode.com/r/c_httpie_tool")
 	region := flag.String("region", "", "Veracode Region [global, us, eu]")
 	scanA := flag.String("a", "", "Veracode Platform URL or build ID for scan \"A\"")
 	scanB := flag.String("b", "", "Veracode Platform URL or build ID for scan \"B\"")
@@ -71,7 +72,7 @@ func main() {
 
 	notifyOfUpdates()
 
-	var apiId, apiKey = getCredentials(*vid, *vkey)
+	var apiId, apiKey = getCredentials(*vid, *vkey, *profile)
 	var api = API{apiId, apiKey, regionToUse}
 
 	scanAAppId := parseAppIdFromPlatformUrl(*scanA)

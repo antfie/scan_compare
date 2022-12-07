@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
+	"gopkg.in/ini.v1"
 )
 
 func formatCredential(credential string) string {
@@ -19,7 +20,7 @@ func formatCredential(credential string) string {
 	return credential
 }
 
-func getCredentials(id, key string) (string, string) {
+func getCredentials(id, key string, profile string) (string, string) {
 	id = formatCredential(id)
 	key = formatCredential(key)
 
@@ -86,64 +87,42 @@ func getCredentials(id, key string) (string, string) {
 	var credentialsFilePath = filepath.Join(homePath, ".veracode", "credentials")
 
 	if _, err := os.Stat(credentialsFilePath); errors.Is(err, os.ErrNotExist) {
-		color.HiRed("Error: Could not resolve any API credentials. Use either -vid and -vkey command line arguments, set VERACODE_API_KEY_ID and VERACODE_API_KEY_SECRET environment variables or create a Veracode credentials file - see: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.HiRed("Error: Could not resolve any API credentials. Use either -vid and -vkey command line arguments, set VERACODE_API_KEY_ID and VERACODE_API_KEY_SECRET environment variables or create a Veracode credentials file. See https://docs.veracode.com/r/c_configure_api_cred_file")
 		os.Exit(1)
 	}
 
-	file, err := os.Open(credentialsFilePath)
-
+	cfg, err := ini.Load(credentialsFilePath)
 	if err != nil {
-		color.HiRed("Error: Could not open the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.HiRed("Error: Could not open the Veracode credentials file. See https://docs.veracode.com/r/c_configure_api_cred_file")
 		os.Exit(1)
 	}
 
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	found := false
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if line == "[default]" {
-			found = true
-		} else if found {
-			if strings.Contains(line, "[") {
-				found = false
-				id = ""
-				key = ""
-			} else {
-				if strings.Contains(line, "veracode_api_key_id = ") {
-					id = strings.TrimSpace(strings.Split(line, "veracode_api_key_id = ")[1])
-				}
-
-				if strings.Contains(line, "veracode_api_key_secret = ") {
-					key = strings.TrimSpace(strings.Split(line, "veracode_api_key_secret = ")[1])
-				}
-
-				if len(id) > 0 && len(key) > 0 {
-					id = formatCredential(id)
-					key = formatCredential(key)
-
-					if len(id) != 32 {
-						color.HiRed("Error: Invalid value for veracode_api_key_id in file \"%s\"", credentialsFilePath)
-						os.Exit(1)
-					}
-
-					if len(key) != 128 {
-						color.HiRed("Error: Invalid value for veracode_api_key_secret in file \"%s\"", credentialsFilePath)
-						os.Exit(1)
-					}
-
-					return id, key
-
-				}
-			}
-		}
+	if !cfg.HasSection(profile) {
+		color.HiRed(fmt.Sprintf("Error: Could not find the profile [%s] within the Veracode credentials file. See https://docs.veracode.com/r/c_httpie_tool", profile))
+		os.Exit(1)
 	}
 
-	color.HiRed("Error: Could not parse credentials from the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+	id = cfg.Section(profile).Key("veracode_api_key_id").String()
+	key = cfg.Section(profile).Key("veracode_api_key_secret").String()
+
+	if len(id) > 0 && len(key) > 0 {
+		id = formatCredential(id)
+		key = formatCredential(key)
+
+		if len(id) != 32 {
+			color.HiRed("Error: Invalid value for veracode_api_key_id in file \"%s\"", credentialsFilePath)
+			os.Exit(1)
+		}
+
+		if len(key) != 128 {
+			color.HiRed("Error: Invalid value for veracode_api_key_secret in file \"%s\"", credentialsFilePath)
+			os.Exit(1)
+		}
+
+		return id, key
+	}
+
+	color.HiRed("Error: Could not parse credentials from the Veracode credentials file. See https://docs.veracode.com/r/c_configure_api_cred_file")
 	os.Exit(1)
 	return "", ""
 }
