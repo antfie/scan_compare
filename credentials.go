@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,7 +20,7 @@ func formatCredential(credential string) string {
 	return credential
 }
 
-func getCredentials(id, key string, section string) (string, string) {
+func getCredentials(id, key string, profile string) (string, string) {
 	id = formatCredential(id)
 	key = formatCredential(key)
 
@@ -86,18 +87,23 @@ func getCredentials(id, key string, section string) (string, string) {
 	var credentialsFilePath = filepath.Join(homePath, ".veracode", "credentials")
 
 	if _, err := os.Stat(credentialsFilePath); errors.Is(err, os.ErrNotExist) {
-		color.HiRed("Error: Could not resolve any API credentials. Use either -vid and -vkey command line arguments, set VERACODE_API_KEY_ID and VERACODE_API_KEY_SECRET environment variables or create a Veracode credentials file - see: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.HiRed("Error: Could not resolve any API credentials. Use either -vid and -vkey command line arguments, set VERACODE_API_KEY_ID and VERACODE_API_KEY_SECRET environment variables or create a Veracode credentials file. See https://docs.veracode.com/r/c_configure_api_cred_file")
 		os.Exit(1)
 	}
 
 	cfg, err := ini.Load(credentialsFilePath)
 	if err != nil {
-		color.HiRed("Error: Could not open the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+		color.HiRed("Error: Could not open the Veracode credentials file. See https://docs.veracode.com/r/c_configure_api_cred_file")
 		os.Exit(1)
 	}
 
-	id = cfg.Section(section).Key("veracode_api_key_id").String()
-	key = cfg.Section(section).Key("veracode_api_key_secret").String()
+	if !cfg.HasSection(profile) {
+		color.HiRed(fmt.Sprintf("Error: Could not find the profile [%s] within the Veracode credentials file. See https://docs.veracode.com/r/c_httpie_tool", profile))
+		os.Exit(1)
+	}
+
+	id = cfg.Section(profile).Key("veracode_api_key_id").String()
+	key = cfg.Section(profile).Key("veracode_api_key_secret").String()
 
 	if len(id) > 0 && len(key) > 0 {
 		id = formatCredential(id)
@@ -116,7 +122,7 @@ func getCredentials(id, key string, section string) (string, string) {
 		return id, key
 	}
 
-	color.HiRed("Error: Could not parse credentials from the Veracode credentials file. See: https://docs.veracode.com/r/c_configure_api_cred_file")
+	color.HiRed("Error: Could not parse credentials from the Veracode credentials file. See https://docs.veracode.com/r/c_configure_api_cred_file")
 	os.Exit(1)
 	return "", ""
 }
