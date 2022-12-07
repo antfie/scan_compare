@@ -6,7 +6,7 @@
 
 This is an unofficial Veracode product. It does not come with any support or warrenty.
 
-Use this tool to compare two Veracode Static Analysis (SAST) scans.
+Use this tool to compare two Veracode Static Analysis (SAST) scans. The scans must have completed for the comparrison to work.
 
 ## Usage
 
