@@ -38,6 +38,14 @@ func getMissingSupportedFileCountFromPreScanModuleStatus(module PrescanModule) i
 	return 0
 }
 
+func getFormattedModuleMD5(input string) string {
+	if len(strings.TrimSpace(input)) > 0 {
+		return fmt.Sprintf(", MD5 = %s", input)
+	}
+
+	return ""
+}
+
 func compareTopLevelSelectedModules(report *strings.Builder, side string, modulesInThisSideReport, modulesInTheOtherSideReport []DetailedReportModule, thisSidePrescanFileList PrescanFileList, thisSidePrescanModuleList PrescanModuleList) {
 	for _, moduleFoundInThisSide := range modulesInThisSideReport {
 		if !moduleFoundInThisSide.isModuleNameInDetailedReportModuleArray(modulesInTheOtherSideReport) {
@@ -62,14 +70,14 @@ func compareTopLevelSelectedModules(report *strings.Builder, side string, module
 				formattedIsDependency = fmt.Sprintf(", %s", color.HiYellowString("Module is Dependency"))
 			}
 
-			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s / %s / %s\n",
+			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s%s, Platform = %s / %s / %s\n",
 				getFormattedOnlyInSideString(side),
 				moduleFoundInThisSide.Name,
 				prescanModule.Size,
 				formattedSupportIssues,
 				formattedMissingSupportedFiles,
 				formattedIsDependency,
-				thisSidePrescanFileList.getFromName(moduleFoundInThisSide.Name).MD5,
+				getFormattedModuleMD5(thisSidePrescanFileList.getFromName(moduleFoundInThisSide.Name).MD5),
 				moduleFoundInThisSide.Architecture,
 				moduleFoundInThisSide.Os,
 				moduleFoundInThisSide.Compiler))
@@ -144,14 +152,14 @@ func compareTopLevelNotSelectedModules(report *strings.Builder, side string, pre
 				formattedMissingSupportedFiles = fmt.Sprintf(", %s", color.HiYellowString("Missing Supporting Files = %d", missingSupportedFileCount))
 			}
 
-			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s, MD5 = %s, Platform = %s\n",
+			report.WriteString(fmt.Sprintf("%s: \"%s\" - Size = %s%s%s%s%s, Platform = %s\n",
 				getFormattedOnlyInSideString(side),
 				prescanModuleFoundInThisSide.Name,
 				prescanModuleFoundInThisSide.Size,
 				formattedSupportIssues,
 				formattedFatalError,
 				formattedMissingSupportedFiles,
-				prescanModuleFoundInThisSide.MD5,
+				getFormattedModuleMD5(prescanModuleFoundInThisSide.MD5),
 				prescanModuleFoundInThisSide.Platform))
 		}
 	}

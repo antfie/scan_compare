@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -68,4 +69,23 @@ func getFormattedSideStringWithMessage(side, message string) string {
 	}
 
 	return color.HiMagentaString(message)
+}
+
+func dedupeArray[T interface{}](array []T) []T {
+	result := []T{}
+
+	for _, item := range array {
+		found := false
+		for _, processedItem := range result {
+			if !found && reflect.DeepEqual(item, processedItem) {
+				found = true
+			}
+		}
+
+		if !found {
+			result = append(result, item)
+		}
+	}
+
+	return result
 }

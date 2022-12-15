@@ -76,6 +76,9 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 	report := DetailedReport{}
 	xml.Unmarshal(response, &report)
 
+	// Dedupe the module list which can contain duplicate entries
+	report.StaticAnalysis.Modules = dedupeArray(report.StaticAnalysis.Modules)
+
 	// Sort modules by name for consistency
 	sort.Slice(report.StaticAnalysis.Modules, func(i, j int) bool {
 		return report.StaticAnalysis.Modules[i].Name < report.StaticAnalysis.Modules[j].Name
