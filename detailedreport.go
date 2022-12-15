@@ -85,6 +85,11 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 		return report.StaticAnalysis.Modules[i].Name < report.StaticAnalysis.Modules[j].Name
 	})
 
+	// Sort flaws by ID for consistency
+	sort.Slice(report.Flaws, func(i, j int) bool {
+		return report.Flaws[i].ID < report.Flaws[j].ID
+	})
+
 	return report
 }
 
