@@ -89,7 +89,7 @@ func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSid
 				getFormattedOnlyInSideString(side),
 				len(flawsOnlyInThisScan),
 				cwe,
-				getSortedIntArrayAsSFormattedString(flawsOnlyInThisScan)))
+				getSortedIntArrayAsFormattedString(flawsOnlyInThisScan)))
 		}
 	}
 }

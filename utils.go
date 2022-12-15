@@ -27,7 +27,7 @@ func stringToFloat(input string) (float64, error) {
 	return strconv.ParseFloat(input, 64)
 }
 
-func getSortedIntArrayAsSFormattedString(list []int) string {
+func getSortedIntArrayAsFormattedString(list []int) string {
 	sort.Ints(list[:])
 	var output []string
 	for _, x := range list {
