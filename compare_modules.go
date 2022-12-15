@@ -92,8 +92,14 @@ func (data Data) reportNotSelectedModuleDifferences() {
 	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules, false)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
-		fmt.Println("===============================================================================================================================")
+		if strings.Contains(report.String(), "files extracted from") {
+			color.HiCyan("\nDifferences of Top-Level Modules Which May or May Not Have Been Selected")
+			fmt.Println("========================================================================")
+		} else {
+			color.HiCyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
+			fmt.Println("===============================================================================================================================")
+		}
+
 		colorPrintf(report.String())
 	}
 }
