@@ -57,9 +57,11 @@ func (api API) getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId int) D
 	wg.Wait()
 
 	data.ScanAReport.SubmittedDate = parseVeracodeDate(data.ScanAReport.StaticAnalysis.SubmittedDate).Local()
+	data.ScanAReport.PublishedDate = parseVeracodeDate(data.ScanAReport.StaticAnalysis.PublishedDate).Local()
 	data.ScanBReport.SubmittedDate = parseVeracodeDate(data.ScanBReport.StaticAnalysis.SubmittedDate).Local()
-	data.ScanAReport.Duration = parseVeracodeDate(data.ScanAReport.StaticAnalysis.PublishedDate).Local().Sub(data.ScanAReport.SubmittedDate)
-	data.ScanBReport.Duration = parseVeracodeDate(data.ScanBReport.StaticAnalysis.PublishedDate).Local().Sub(data.ScanBReport.SubmittedDate)
+	data.ScanBReport.PublishedDate = parseVeracodeDate(data.ScanBReport.StaticAnalysis.PublishedDate).Local()
+	data.ScanAReport.Duration = data.ScanAReport.PublishedDate.Sub(data.ScanAReport.SubmittedDate)
+	data.ScanBReport.Duration = data.ScanBReport.PublishedDate.Sub(data.ScanBReport.SubmittedDate)
 
 	return data
 }

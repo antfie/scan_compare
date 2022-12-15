@@ -104,9 +104,7 @@ func main() {
 	reportDuplicateFiles("A", data.ScanAPrescanFileList)
 	reportDuplicateFiles("B", data.ScanBPrescanFileList)
 	data.reportModuleDifferences()
-	data.reportPolicyAffectingFlawDifferences()
-	data.reportNonPolicyAffectingFlawDifferences()
-	data.reportCloseDFlawDifferences()
+	data.reportFlawDifferences()
 	data.reportSummary()
 }
 
@@ -201,6 +199,7 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 	}
 
 	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl())
+	fmt.Printf("Traige Flaws URL:   %s\n", thisDetailedReport.getTriageFlawsUrl())
 
 	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
 		fmt.Printf("Files uploaded:     %d\n", len(thisPrescanFileList.Files))
@@ -218,7 +217,8 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 		fmt.Printf("Engine version:     %s\n", thisDetailedReport.StaticAnalysis.EngineVersion)
 	}
 
-	fmt.Printf("Submitted:          %s (%s ago)\n", thisDetailedReport.SubmittedDate, time.Since(thisDetailedReport.SubmittedDate))
+	fmt.Printf("Submitted:          %s (%s ago)\n", thisDetailedReport.SubmittedDate, formatDuration(time.Since(thisDetailedReport.SubmittedDate)))
+	fmt.Printf("Published:          %s (%s ago)\n", thisDetailedReport.PublishedDate, formatDuration(time.Since(thisDetailedReport.PublishedDate)))
 	fmt.Printf("Duration:           %s\n", thisDetailedReport.Duration)
 
 	if !(thisDetailedReport.TotalFlaws == otherDetailedReport.TotalFlaws && thisDetailedReport.UnmitigatedFlaws == otherDetailedReport.UnmitigatedFlaws && thisDetailedReport.getPolicyAffectingFlawCount() == otherDetailedReport.getPolicyAffectingFlawCount() && thisDetailedReport.getOpenNonPolicyAffectingFlawCount() == otherDetailedReport.getOpenNonPolicyAffectingFlawCount()) {
@@ -236,20 +236,20 @@ func (data Data) reportSummary() {
 	var report strings.Builder
 
 	if data.ScanAReport.SubmittedDate.Before(data.ScanBReport.SubmittedDate) {
-		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("B"), data.ScanBReport.SubmittedDate.Sub(data.ScanAReport.SubmittedDate), getFormattedSideString("A")))
+		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("B"), formatDuration(data.ScanBReport.SubmittedDate.Sub(data.ScanAReport.SubmittedDate)), getFormattedSideString("A")))
 	} else if data.ScanAReport.SubmittedDate.After(data.ScanBReport.SubmittedDate) {
-		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("A"), data.ScanAReport.SubmittedDate.Sub(data.ScanBReport.SubmittedDate), getFormattedSideString("B")))
+		report.WriteString(fmt.Sprintf("%s was submitted %s after %s\n", getFormattedSideString("A"), formatDuration(data.ScanAReport.SubmittedDate.Sub(data.ScanBReport.SubmittedDate)), getFormattedSideString("B")))
 	}
 
 	if data.ScanAReport.Duration > data.ScanBReport.Duration {
-		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("A"), data.ScanAReport.Duration-data.ScanBReport.Duration))
+		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("A"), formatDuration(data.ScanAReport.Duration-data.ScanBReport.Duration)))
 	} else if data.ScanAReport.Duration < data.ScanBReport.Duration {
-		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("B"), data.ScanBReport.Duration-data.ScanAReport.Duration))
+		report.WriteString(fmt.Sprintf("%s took longer by %s\n", getFormattedSideString("B"), formatDuration(data.ScanBReport.Duration-data.ScanAReport.Duration)))
 	}
 
 	if report.Len() > 0 {
 		color.HiCyan("\nSummary")
-		fmt.Print("========\n")
+		fmt.Print("=======\n")
 		colorPrintf(report.String())
 	}
 }

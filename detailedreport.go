@@ -27,6 +27,7 @@ type DetailedReport struct {
 	StaticAnalysis       DetailedReportStaticAnalysis `xml:"static-analysis"`
 	Flaws                []DetailedReportFlaw         `xml:"severity>category>cwe>staticflaws>flaw"`
 	SubmittedDate        time.Time
+	PublishedDate        time.Time
 	Duration             time.Duration
 }
 
@@ -89,6 +90,16 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 
 func (report DetailedReport) getReviewModulesUrl() string {
 	return fmt.Sprintf("https://analysiscenter.veracode.com/auth/index.jsp#AnalyzeAppModuleList:%d:%d:%d:%d:%d::::%d",
+		report.AccountId,
+		report.AppId,
+		report.BuildId,
+		report.AnalysisId,
+		report.StaticAnalysisUnitId,
+		report.SandboxId)
+}
+
+func (report DetailedReport) getTriageFlawsUrl() string {
+	return fmt.Sprintf("https://analysiscenter.veracode.com/auth/index.jsp#ReviewResultsStaticFlaws:%d:%d:%d:%d:%d::::%d",
 		report.AccountId,
 		report.AppId,
 		report.BuildId,

@@ -5,8 +5,72 @@ import (
 	"sort"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/fatih/color"
 )
+
+func (data Data) reportFlawDifferences() {
+	data.reportFlawStateDifferences()
+	data.reportFlawMitigationDifferences()
+	data.reportFlawLineNumberChanges()
+
+	// Disable this for now. Results are not stable. Unsure if memory leak or API returningindederministic result
+	// data.reportMatchedFlawMovements()
+
+	data.reportPolicyAffectingFlawDifferences()
+	data.reportNonPolicyAffectingFlawDifferences()
+	data.reportClosedFlawDifferences()
+}
+
+func (data Data) reportFlawStateDifferences() {
+	var report strings.Builder
+
+	compareFlawStates(&report, data.ScanAReport, data.ScanBReport)
+
+	if report.Len() > 0 {
+		color.HiCyan("\nFlaw State Differences")
+		fmt.Print("======================\n")
+		colorPrintf(report.String())
+	}
+}
+
+func (data Data) reportFlawMitigationDifferences() {
+	var report strings.Builder
+
+	compareFlawMitigations(&report, data.ScanAReport, data.ScanBReport)
+
+	if report.Len() > 0 {
+		color.HiCyan("\nFlaw Mitigation Differences")
+		fmt.Print("===========================\n")
+		colorPrintf(report.String())
+	}
+}
+
+func (data Data) reportFlawLineNumberChanges() {
+	var report strings.Builder
+
+	compareFlawLineNumberChanges(&report, data.ScanAReport, data.ScanBReport)
+
+	if report.Len() > 0 {
+		color.HiCyan("\nFlaw Line Number Differences")
+		fmt.Print("============================\n")
+		colorPrintf(report.String())
+	}
+}
+
+func (data Data) reportMatchedFlawMovements() {
+	var report strings.Builder
+
+	compareFlawMatchMovements(&report, data.ScanAReport, data.ScanBReport)
+
+	if report.Len() > 0 {
+		color.HiCyan("\nMatched Flaw Movements")
+		fmt.Print("======================\n")
+		colorPrintf(report.String())
+	}
+}
 
 func (data Data) reportPolicyAffectingFlawDifferences() {
 	var report strings.Builder
@@ -34,7 +98,7 @@ func (data Data) reportNonPolicyAffectingFlawDifferences() {
 	}
 }
 
-func (data Data) reportCloseDFlawDifferences() {
+func (data Data) reportClosedFlawDifferences() {
 	var report strings.Builder
 
 	compareFlaws(&report, "A", data.ScanAReport, data.ScanBReport, false, true)
@@ -90,6 +154,95 @@ func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSid
 				len(flawsOnlyInThisScan),
 				cwe,
 				getSortedIntArrayAsFormattedString(flawsOnlyInThisScan)))
+		}
+	}
+}
+
+func compareFlawStates(report *strings.Builder, thisSideReport, otherSideReport DetailedReport) {
+	for _, thisSideFlaw := range thisSideReport.Flaws {
+		for _, otherSideFlaw := range otherSideReport.Flaws {
+			if thisSideFlaw.ID != otherSideFlaw.ID {
+				continue
+			}
+
+			if thisSideFlaw.RemediationStatus != otherSideFlaw.RemediationStatus {
+				report.WriteString(fmt.Sprintf("%d (CWE-%d): %s: %s, %s: %s\n",
+					thisSideFlaw.ID,
+					thisSideFlaw.CWE,
+					getFormattedSideString("A"),
+					thisSideFlaw.RemediationStatus,
+					getFormattedSideString("B"),
+					otherSideFlaw.RemediationStatus))
+			}
+		}
+	}
+}
+
+func compareFlawMitigations(report *strings.Builder, thisSideReport, otherSideReport DetailedReport) {
+	for _, thisSideFlaw := range thisSideReport.Flaws {
+		for _, otherSideFlaw := range otherSideReport.Flaws {
+			if thisSideFlaw.ID != otherSideFlaw.ID {
+				continue
+			}
+
+			if thisSideFlaw.MitigationStatus != otherSideFlaw.MitigationStatus {
+				report.WriteString(fmt.Sprintf("%d (CWE-%d): %s: %s, %s: %s\n",
+					thisSideFlaw.ID,
+					thisSideFlaw.CWE,
+					getFormattedSideString("A"),
+					cases.Title(language.English).String(thisSideFlaw.MitigationStatus),
+					getFormattedSideString("B"),
+					cases.Title(language.English).String(otherSideFlaw.MitigationStatus)))
+			}
+		}
+	}
+}
+
+func compareFlawLineNumberChanges(report *strings.Builder, thisSideReport, otherSideReport DetailedReport) {
+	for _, thisSideFlaw := range thisSideReport.Flaws {
+		for _, otherSideFlaw := range otherSideReport.Flaws {
+			if thisSideFlaw.ID != otherSideFlaw.ID {
+				continue
+			}
+
+			if thisSideFlaw.LineNumber != otherSideFlaw.LineNumber {
+				report.WriteString(fmt.Sprintf("%d (CWE-%d): %s: %d, %s: %d\n",
+					thisSideFlaw.ID,
+					thisSideFlaw.CWE,
+					getFormattedSideString("A"),
+					thisSideFlaw.LineNumber,
+					getFormattedSideString("B"),
+					otherSideFlaw.LineNumber))
+			}
+		}
+	}
+}
+
+func compareFlawMatchMovements(report *strings.Builder, thisSideReport, otherSideReport DetailedReport) {
+	for _, thisSideFlaw := range thisSideReport.Flaws {
+		for _, otherSideFlaw := range otherSideReport.Flaws {
+			if thisSideFlaw.ID != otherSideFlaw.ID {
+				continue
+			}
+
+			// If we are missing hashes move on
+			if len(thisSideFlaw.ProcedureHash) < 5 || len(thisSideFlaw.PrototypeHash) < 5 || len(thisSideFlaw.StatementHash) < 5 || len(otherSideFlaw.ProcedureHash) < 5 || len(otherSideFlaw.PrototypeHash) < 5 || len(otherSideFlaw.StatementHash) < 5 {
+				continue
+			}
+
+			if thisSideFlaw.ProcedureHash != otherSideFlaw.ProcedureHash || thisSideFlaw.PrototypeHash != otherSideFlaw.PrototypeHash || thisSideFlaw.StatementHash != otherSideFlaw.StatementHash {
+				report.WriteString(fmt.Sprintf("%d (CWE-%d) - %s: Procedure = %s, Prototype = %s, Statement = %s, %s: Procedure = %s, Prototype = %s, Statement = %s\n",
+					thisSideFlaw.ID,
+					thisSideFlaw.CWE,
+					getFormattedSideString("A"),
+					thisSideFlaw.ProcedureHash,
+					thisSideFlaw.PrototypeHash,
+					thisSideFlaw.StatementHash,
+					getFormattedSideString("B"),
+					otherSideFlaw.ProcedureHash,
+					otherSideFlaw.PrototypeHash,
+					otherSideFlaw.StatementHash))
+			}
 		}
 	}
 }

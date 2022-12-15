@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -88,4 +90,19 @@ func dedupeArray[T interface{}](array []T) []T {
 	}
 
 	return result
+}
+
+func formatDuration(duration time.Duration) string {
+	str := duration.String()
+
+	if duration.Hours() > 24 {
+		days := int(duration.Hours() / 24)
+		remainingHours := duration.Hours() - float64(days*24)
+		str = fmt.Sprintf("%dd %dh%s", days, int(remainingHours), strings.Split(str, "h")[1])
+	}
+
+	str = strings.Replace(str, "h", "h ", 1)
+	str = strings.Replace(str, "m", "m ", 1)
+
+	return str
 }
