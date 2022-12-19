@@ -123,6 +123,14 @@ func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 		report.WriteString("* The scan engine versions are different. This means there has been one or more deployments of the Veracode scan engine between these scans. This can sometimes explain why new flaws might be reported (due to improved scan coverage), and others are no longer reported (due to a reduction of False Positives)\n")
 	}
 
+	if time.Since(data.ScanAReport.SubmittedDate).Hours() >= 30*24 && time.Since(data.ScanBReport.SubmittedDate).Hours() >= 30*24 {
+		report.WriteString("* Both scans are older than 30 days. This means the files will have been deleted and Veracode support therefore require a newer scan to investigate any issues further.\n")
+	} else if time.Since(data.ScanAReport.SubmittedDate).Hours() >= 30*24 {
+		report.WriteString("* Scan A is older than 30 days. This means the files will have been deleted and Veracode support therefore require a newer scan to investigate any issues further.\n")
+	} else if time.Since(data.ScanBReport.SubmittedDate).Hours() >= 30*24 {
+		report.WriteString("* Scan B is older than 30 days. This means the files will have been deleted and Veracode support therefore require a newer scan to investigate any issues further.\n")
+	}
+
 	if report.Len() > 0 {
 		color.HiCyan("\nWarnings")
 		fmt.Println("========")
