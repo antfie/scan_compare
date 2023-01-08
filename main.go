@@ -95,6 +95,7 @@ func main() {
 	data := api.getData(scanAAppId, scanABuildId, scanBAppId, scanBBuildId)
 
 	data.reportOnWarnings(*scanA, *scanB)
+	data.assertPrescanModulesPresent()
 	data.reportCommonalities()
 	reportScanDetails(api.region, "A", data.ScanAReport, data.ScanBReport, data.ScanAPrescanFileList, data.ScanBPrescanFileList, data.ScanAPrescanModuleList, data.ScanBPrescanModuleList)
 	reportScanDetails(api.region, "B", data.ScanBReport, data.ScanAReport, data.ScanBPrescanFileList, data.ScanAPrescanFileList, data.ScanBPrescanModuleList, data.ScanAPrescanModuleList)
@@ -237,6 +238,23 @@ func reportScanDetails(region, side string, thisDetailedReport, otherDetailedRep
 		} else {
 			fmt.Print(flawsFormatted)
 		}
+	}
+}
+
+func (data Data) assertPrescanModulesPresent() {
+	if len(data.ScanAPrescanModuleList.Modules) == 0 && len(data.ScanBPrescanModuleList.Modules) == 0 {
+		color.HiRed("Error: Could not retrieve pre-scan modules for either scan")
+		os.Exit(1)
+	}
+
+	if len(data.ScanAPrescanModuleList.Modules) == 0 {
+		color.HiRed("Error: Could not retrieve pre-scan modules for scan A")
+		os.Exit(1)
+	}
+
+	if len(data.ScanBPrescanModuleList.Modules) == 0 {
+		color.HiRed("Error: Could not retrieve pre-scan modules for scan B")
+		os.Exit(1)
 	}
 }
 
