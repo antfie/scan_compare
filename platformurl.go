@@ -33,7 +33,6 @@ func isPlatformURL(url string) bool {
 }
 
 func isParseableURL(urlFragment string) bool {
-
 	for _, page := range supportedPages {
 		if strings.HasPrefix(urlFragment, page) {
 			return true

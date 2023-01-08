@@ -111,17 +111,20 @@ func (data Data) reportClosedFlawDifferences() {
 	}
 }
 
-func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSideReport DetailedReport, policyAffecting bool, onlyClosed bool) {
+func getSortedCwes(report DetailedReport) []int {
 	var cwes []int
-	for _, thisSideFlaw := range thisSideReport.Flaws {
+	for _, thisSideFlaw := range report.Flaws {
 		if !isInIntArray(thisSideFlaw.CWE, cwes) {
 			cwes = append(cwes, thisSideFlaw.CWE)
 		}
 	}
 
 	sort.Ints(cwes[:])
+	return cwes
+}
 
-	for _, cwe := range cwes {
+func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSideReport DetailedReport, policyAffecting bool, onlyClosed bool) {
+	for _, cwe := range getSortedCwes(thisSideReport) {
 		var flawsOnlyInThisScan []int
 
 		for _, thisSideFlaw := range thisSideReport.Flaws {
@@ -159,22 +162,42 @@ func compareFlaws(report *strings.Builder, side string, thisSideReport, otherSid
 }
 
 func compareFlawStates(report *strings.Builder, thisSideReport, otherSideReport DetailedReport) {
+	stateChanges := make(map[string][]int)
+
 	for _, thisSideFlaw := range thisSideReport.Flaws {
 		for _, otherSideFlaw := range otherSideReport.Flaws {
 			if thisSideFlaw.ID != otherSideFlaw.ID {
 				continue
 			}
 
-			if thisSideFlaw.RemediationStatus != otherSideFlaw.RemediationStatus {
-				report.WriteString(fmt.Sprintf("%d (CWE-%d): %s: %s, %s: %s\n",
-					thisSideFlaw.ID,
-					thisSideFlaw.CWE,
-					getFormattedSideString("A"),
-					thisSideFlaw.RemediationStatus,
-					getFormattedSideString("B"),
-					otherSideFlaw.RemediationStatus))
+			if thisSideFlaw.RemediationStatus == otherSideFlaw.RemediationStatus {
+				continue
 			}
+
+			var stateChange = fmt.Sprintf("%s %-9s => %s %-9s: CWE-%d",
+				getFormattedSideString("A"),
+				thisSideFlaw.RemediationStatus,
+				getFormattedSideString("B"),
+				otherSideFlaw.RemediationStatus,
+				thisSideFlaw.CWE)
+
+			stateChanges[stateChange] = append(stateChanges[stateChange], thisSideFlaw.ID)
+
 		}
+	}
+
+	sortedKeys := make([]string, 0, len(stateChanges))
+	for k := range stateChanges {
+		sortedKeys = append(sortedKeys, k)
+	}
+
+	sort.Strings(sortedKeys)
+
+	for _, key := range sortedKeys {
+		var flawIds = stateChanges[key]
+
+		var formattedS = strings.Replace(key, "CWE", fmt.Sprintf("%dx CWE", len(flawIds)), 1)
+		report.WriteString(fmt.Sprintf("%s = %s\n", formattedS, getSortedIntArrayAsFormattedString(flawIds)))
 	}
 }
 
