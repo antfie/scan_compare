@@ -96,8 +96,8 @@ func main() {
 
 	data.reportOnWarnings(*scanA, *scanB)
 	data.reportCommonalities()
-	reportScanDetails("A", data.ScanAReport, data.ScanBReport, data.ScanAPrescanFileList, data.ScanBPrescanFileList, data.ScanAPrescanModuleList, data.ScanBPrescanModuleList)
-	reportScanDetails("B", data.ScanBReport, data.ScanAReport, data.ScanBPrescanFileList, data.ScanAPrescanFileList, data.ScanBPrescanModuleList, data.ScanAPrescanModuleList)
+	reportScanDetails(api.region, "A", data.ScanAReport, data.ScanBReport, data.ScanAPrescanFileList, data.ScanBPrescanFileList, data.ScanAPrescanModuleList, data.ScanBPrescanModuleList)
+	reportScanDetails(api.region, "B", data.ScanBReport, data.ScanAReport, data.ScanBPrescanFileList, data.ScanAPrescanFileList, data.ScanBPrescanModuleList, data.ScanAPrescanModuleList)
 	data.reportTopLevelModuleDifferences()
 	data.reportNotSelectedModuleDifferences()
 	data.reportDependencyModuleDifferences()
@@ -186,7 +186,7 @@ func (data Data) reportCommonalities() {
 	}
 }
 
-func reportScanDetails(side string, thisDetailedReport, otherDetailedReport DetailedReport, thisPrescanFileList, otherPrescanFileList PrescanFileList, thisPrescanModuleList, otherPrescanModuleList PrescanModuleList) {
+func reportScanDetails(region, side string, thisDetailedReport, otherDetailedReport DetailedReport, thisPrescanFileList, otherPrescanFileList PrescanFileList, thisPrescanModuleList, otherPrescanModuleList PrescanModuleList) {
 	colorPrintf(getFormattedSideStringWithMessage(side, fmt.Sprintf("\nScan %s", side)))
 	fmt.Println("\n======")
 
@@ -206,8 +206,8 @@ func reportScanDetails(side string, thisDetailedReport, otherDetailedReport Deta
 		fmt.Printf("Scan name:          \"%s\"\n", thisDetailedReport.StaticAnalysis.ScanName)
 	}
 
-	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl())
-	fmt.Printf("Traige Flaws URL:   %s\n", thisDetailedReport.getTriageFlawsUrl())
+	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl(region))
+	fmt.Printf("Traige Flaws URL:   %s\n", thisDetailedReport.getTriageFlawsUrl(region))
 
 	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
 		fmt.Printf("Files uploaded:     %d\n", len(thisPrescanFileList.Files))

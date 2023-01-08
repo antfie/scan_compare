@@ -93,8 +93,9 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 	return report
 }
 
-func (report DetailedReport) getReviewModulesUrl() string {
-	return fmt.Sprintf("https://analysiscenter.veracode.com/auth/index.jsp#AnalyzeAppModuleList:%d:%d:%d:%d:%d::::%d",
+func (report DetailedReport) getReviewModulesUrl(region string) string {
+	return fmt.Sprintf("%s/auth/index.jsp#AnalyzeAppModuleList:%d:%d:%d:%d:%d::::%d",
+		parseBaseUrlFromRegion(region),
 		report.AccountId,
 		report.AppId,
 		report.BuildId,
@@ -103,8 +104,9 @@ func (report DetailedReport) getReviewModulesUrl() string {
 		report.SandboxId)
 }
 
-func (report DetailedReport) getTriageFlawsUrl() string {
-	return fmt.Sprintf("https://analysiscenter.veracode.com/auth/index.jsp#ReviewResultsStaticFlaws:%d:%d:%d:%d:%d::::%d",
+func (report DetailedReport) getTriageFlawsUrl(region string) string {
+	return fmt.Sprintf("%s/auth/index.jsp#ReviewResultsStaticFlaws:%d:%d:%d:%d:%d::::%d",
+		parseBaseUrlFromRegion(region),
 		report.AccountId,
 		report.AppId,
 		report.BuildId,

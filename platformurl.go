@@ -53,6 +53,18 @@ func parseRegionFromUrl(url string) string {
 	return "global"
 }
 
+func parseBaseUrlFromRegion(region string) string {
+	if region == "us" {
+		return "https://analysiscenter.veracode.us"
+	}
+
+	if region == "eu" {
+		return "https://analysiscenter.veracode.eu"
+	}
+
+	return "https://analysiscenter.veracode.com"
+}
+
 func parseAccountIdFromPlatformUrl(urlOrAccountId string) int {
 	accountId, err := strconv.Atoi(urlOrAccountId)
 
