@@ -17,7 +17,7 @@ Alternatively you can use environment variables (`VERACODE_API_KEY_ID` and `VERA
 ```
 ./scan_compare -h
 Scan Compare v1.x
-Copyright © Veracode, Inc. 2022. All Rights Reserved.
+Copyright © Veracode, Inc. 2023. All Rights Reserved.
 This is an unofficial Veracode product. It does not come with any support or warrenty.
 
 Usage of scan_compare:
