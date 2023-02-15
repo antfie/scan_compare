@@ -133,8 +133,7 @@ func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 	}
 
 	if report.Len() > 0 {
-		color.HiCyan("\nWarnings")
-		fmt.Println("========")
+		printTitle("Warnings")
 		color.HiYellow(report.String())
 	}
 }
@@ -181,8 +180,7 @@ func (data Data) reportCommonalities() {
 	}
 
 	if report.Len() > 0 {
-		color.HiCyan("\nIn common with both scans")
-		fmt.Println("=========================")
+		printTitle("In common with both scans")
 		colorPrintf(report.String())
 	}
 }
@@ -274,8 +272,7 @@ func (data Data) reportSummary() {
 	}
 
 	if report.Len() > 0 {
-		color.HiCyan("\nSummary")
-		fmt.Print("=======\n")
+		printTitle("Summary")
 		colorPrintf(report.String())
 	}
 }

@@ -15,8 +15,7 @@ func (data Data) reportTopLevelModuleDifferences() {
 	compareTopLevelSelectedModules(&report, "B", data.ScanBReport.StaticAnalysis.Modules, data.ScanAReport.StaticAnalysis.Modules, data.ScanBPrescanFileList, data.ScanBPrescanModuleList)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nDifferences of Top-Level Modules Selected As An Entry Point For Scanning")
-		fmt.Println("========================================================================")
+		printTitle("Differences of Top-Level Modules Selected As An Entry Point For Scanning")
 		colorPrintf(report.String())
 	}
 }
@@ -93,11 +92,9 @@ func (data Data) reportNotSelectedModuleDifferences() {
 
 	if report.Len() > 0 {
 		if strings.Contains(report.String(), "files extracted from") {
-			color.HiCyan("\nDifferences of Top-Level Modules Which May or May Not Have Been Selected")
-			fmt.Println("========================================================================")
+			printTitle("Differences of Top-Level Modules Which May or May Not Have Been Selected")
 		} else {
-			color.HiCyan("\nDifferences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
-			fmt.Println("===============================================================================================================================")
+			printTitle("Differences of Top-Level Modules Not Selected As An Entry Point (And Not Scanned) - Unselected Potential First Party Components")
 		}
 
 		colorPrintf(report.String())
@@ -111,8 +108,7 @@ func (data Data) reportDependencyModuleDifferences() {
 	compareTopLevelNotSelectedModules(&report, "B", data.ScanBPrescanModuleList, data.ScanAPrescanModuleList, data.ScanBReport.StaticAnalysis.Modules, true)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nDifferences of Dependency Modules Not Selected As An Entry Point")
-		fmt.Println("================================================================")
+		printTitle("Differences of Dependency Modules Not Selected As An Entry Point")
 		colorPrintf(report.String())
 	}
 }
@@ -264,8 +260,7 @@ func (data Data) reportModuleDifferences() {
 	}
 
 	if report.Len() > 0 {
-		color.HiCyan("\nModule Differences (Ignoring any duplicates)")
-		fmt.Print("============================================\n")
+		printTitle("Module Differences (Ignoring any duplicates)")
 		colorPrintf(report.String())
 	}
 }

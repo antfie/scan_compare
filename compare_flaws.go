@@ -7,8 +7,6 @@ import (
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-
-	"github.com/fatih/color"
 )
 
 func (data Data) reportFlawDifferences() {
@@ -30,8 +28,7 @@ func (data Data) reportFlawStateDifferences() {
 	compareFlawStates(&report, data.ScanAReport, data.ScanBReport)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nFlaw State Differences")
-		fmt.Print("======================\n")
+		printTitle("Flaw State Differences")
 		colorPrintf(report.String())
 	}
 }
@@ -42,8 +39,7 @@ func (data Data) reportFlawMitigationDifferences() {
 	compareFlawMitigations(&report, data.ScanAReport, data.ScanBReport)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nFlaw Mitigation Differences")
-		fmt.Print("===========================\n")
+		printTitle("Flaw Mitigation Differences")
 		colorPrintf(report.String())
 	}
 }
@@ -54,8 +50,7 @@ func (data Data) reportFlawLineNumberChanges() {
 	compareFlawLineNumberChanges(&report, data.ScanAReport, data.ScanBReport)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nFlaw Line Number Differences")
-		fmt.Print("============================\n")
+		printTitle("Flaw Line Number Differences")
 		colorPrintf(report.String())
 	}
 }
@@ -66,8 +61,7 @@ func (data Data) reportMatchedFlawMovements() {
 	compareFlawMatchMovements(&report, data.ScanAReport, data.ScanBReport)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nMatched Flaw Movements")
-		fmt.Print("======================\n")
+		printTitle("Matched Flaw Movements")
 		colorPrintf(report.String())
 	}
 }
@@ -79,8 +73,7 @@ func (data Data) reportPolicyAffectingFlawDifferences() {
 	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, true, false)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nPolicy Affecting Open Flaw Differences")
-		fmt.Print("======================================\n")
+		printTitle("Policy Affecting Open Flaw Differences")
 		colorPrintf(report.String())
 	}
 }
@@ -92,8 +85,7 @@ func (data Data) reportNonPolicyAffectingFlawDifferences() {
 	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, false, false)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nNon Policy Affecting Open Flaw Differences")
-		fmt.Print("==========================================\n")
+		printTitle("Non Policy Affecting Open Flaw Differences")
 		colorPrintf(report.String())
 	}
 }
@@ -105,8 +97,7 @@ func (data Data) reportClosedFlawDifferences() {
 	compareFlaws(&report, "B", data.ScanBReport, data.ScanAReport, false, true)
 
 	if report.Len() > 0 {
-		color.HiCyan("\nClosed Flaw Differences")
-		fmt.Print("=======================\n")
+		printTitle("Closed Flaw Differences")
 		colorPrintf(report.String())
 	}
 }
