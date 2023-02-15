@@ -206,7 +206,7 @@ func reportScanDetails(region, side string, thisDetailedReport, otherDetailedRep
 	}
 
 	fmt.Printf("Review Modules URL: %s\n", thisDetailedReport.getReviewModulesUrl(region))
-	fmt.Printf("Traige Flaws URL:   %s\n", thisDetailedReport.getTriageFlawsUrl(region))
+	fmt.Printf("Triage Flaws URL:   %s\n", thisDetailedReport.getTriageFlawsUrl(region))
 
 	if len(thisPrescanFileList.Files) != len(otherPrescanFileList.Files) {
 		fmt.Printf("Files uploaded:     %d\n", len(thisPrescanFileList.Files))
