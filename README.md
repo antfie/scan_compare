@@ -2,7 +2,7 @@
 ![Docker Image Size](https://img.shields.io/docker/image-size/antfie/scan_compare/latest)
 ![Downloads](https://img.shields.io/github/downloads/antfie/scan_compare/total)
 
-# Veracode Scan Compare
+# Veracode Scan Compare 🔍
 
 This is an unofficial Veracode product. It does not come with any support or warrenty.
 
@@ -51,11 +51,25 @@ Using Docker:
 docker run -t -v "$HOME/.veracode:/.veracode" antfie/scan_compare -a https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22132159:22103486:22119136::::5000002 -b https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22131974:22103301:22118951::::4999988
 ```
 
+With zsh helper:
+
+add this to your ~/.zshrc file:
+
+```
+alias vsc='f() { /path/to/scan_compare-mac-arm64 -a "$1" -b "$2" };f'
+```
+
+then you can simply run:
+
+```
+vsc https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22132159:22103486:22119136::::5000002 https://analysiscenter.veracode.com/auth/index.jsp#StaticOverview:75603:793744:22131974:22103301:22118951::::4999988
+```
+
 ## Example Output
 
 ![Screenshot](./docs/images/screenshot.png)
 
-## Development
+## Development 🛠️
 
 ### Running
 
