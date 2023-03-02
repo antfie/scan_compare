@@ -11,4 +11,7 @@ GOOS=windows GOARCH=amd64 go build -ldflags="$FLAGS" -trimpath -o "dist/scan_com
 docker build -t antfie/scan_compare:$VERSION . && \
 docker build -t antfie/scan_compare . && \
 docker push antfie/scan_compare:$VERSION && \
-docker push antfie/scan_compare
+docker push antfie/scan_compare && \
+
+ESCAPE=$'\e'
+echo "${ESCAPE}[0;32mSuccess${ESCAPE}[0m"
