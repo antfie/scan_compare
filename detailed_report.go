@@ -90,6 +90,10 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 		return report.Flaws[i].ID < report.Flaws[j].ID
 	})
 
+	report.SubmittedDate = parseVeracodeDate(report.StaticAnalysis.SubmittedDate).Local()
+	report.PublishedDate = parseVeracodeDate(report.StaticAnalysis.PublishedDate).Local()
+	report.Duration = report.PublishedDate.Sub(report.SubmittedDate)
+
 	return report
 }
 
