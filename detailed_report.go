@@ -69,8 +69,13 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 	var url = fmt.Sprintf("https://analysiscenter.veracode.com/api/5.0/detailedreport.do?build_id=%d", buildId)
 	response := api.makeApiRequest(url, http.MethodGet)
 
+	if strings.Contains(string(response[:]), "<error>A valid app could not be found for build_id") {
+		color.HiRed(fmt.Sprintf("Error: The build id %d is not recognised by the Veracode Platform. Has the scan been started?", buildId))
+		os.Exit(1)
+	}
+
 	if strings.Contains(string(response[:]), "<error>No report available.</error>") {
-		color.HiRed(fmt.Sprintf("Error: There was no detailed report for Build id %d. Has the scan finished?", buildId))
+		color.HiRed(fmt.Sprintf("Error: There was no detailed report for build id %d. Has the scan finished?", buildId))
 		os.Exit(1)
 	}
 
