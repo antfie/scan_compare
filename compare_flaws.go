@@ -13,10 +13,6 @@ func (data Data) reportFlawDifferences() {
 	data.reportFlawStateDifferences()
 	data.reportFlawMitigationDifferences()
 	data.reportFlawLineNumberChanges()
-
-	// Disable this for now. Results are not stable. Unsure if memory leak or API returningindederministic result
-	// data.reportMatchedFlawMovements()
-
 	data.reportPolicyAffectingFlawDifferences()
 	data.reportNonPolicyAffectingFlawDifferences()
 	data.reportClosedFlawDifferences()
@@ -51,17 +47,6 @@ func (data Data) reportFlawLineNumberChanges() {
 
 	if report.Len() > 0 {
 		printTitle("Flaw Line Number Differences")
-		colorPrintf(report.String())
-	}
-}
-
-func (data Data) reportMatchedFlawMovements() {
-	var report strings.Builder
-
-	compareFlawMatchMovements(&report, data.ScanAReport, data.ScanBReport)
-
-	if report.Len() > 0 {
-		printTitle("Matched Flaw Movements")
 		colorPrintf(report.String())
 	}
 }
@@ -227,35 +212,6 @@ func compareFlawLineNumberChanges(report *strings.Builder, thisSideReport, other
 					thisSideFlaw.LineNumber,
 					getFormattedSideString("B"),
 					otherSideFlaw.LineNumber))
-			}
-		}
-	}
-}
-
-func compareFlawMatchMovements(report *strings.Builder, thisSideReport, otherSideReport DetailedReport) {
-	for _, thisSideFlaw := range thisSideReport.Flaws {
-		for _, otherSideFlaw := range otherSideReport.Flaws {
-			if thisSideFlaw.ID != otherSideFlaw.ID {
-				continue
-			}
-
-			// If we are missing hashes move on
-			if len(thisSideFlaw.ProcedureHash) < 5 || len(thisSideFlaw.PrototypeHash) < 5 || len(thisSideFlaw.StatementHash) < 5 || len(otherSideFlaw.ProcedureHash) < 5 || len(otherSideFlaw.PrototypeHash) < 5 || len(otherSideFlaw.StatementHash) < 5 {
-				continue
-			}
-
-			if thisSideFlaw.ProcedureHash != otherSideFlaw.ProcedureHash || thisSideFlaw.PrototypeHash != otherSideFlaw.PrototypeHash || thisSideFlaw.StatementHash != otherSideFlaw.StatementHash {
-				report.WriteString(fmt.Sprintf("%d (CWE-%d) - %s: Procedure = %s, Prototype = %s, Statement = %s, %s: Procedure = %s, Prototype = %s, Statement = %s\n",
-					thisSideFlaw.ID,
-					thisSideFlaw.CWE,
-					getFormattedSideString("A"),
-					thisSideFlaw.ProcedureHash,
-					thisSideFlaw.PrototypeHash,
-					thisSideFlaw.StatementHash,
-					getFormattedSideString("B"),
-					otherSideFlaw.ProcedureHash,
-					otherSideFlaw.PrototypeHash,
-					otherSideFlaw.StatementHash))
 			}
 		}
 	}
