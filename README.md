@@ -4,7 +4,7 @@
 
 # Veracode Scan Compare 🔍
 
-This is an unofficial Veracode product. It does not come with any support or warrenty.
+This is an unofficial Veracode product. It does not come with any support or warranty.
 
 Use this console tool to compare two Veracode Static Analysis (SAST) scans. The scans must have completed for the comparison to work.
 
@@ -18,7 +18,7 @@ Alternatively you can use environment variables (`VERACODE_API_KEY_ID` and `VERA
 ./scan_compare -h
 Scan Compare v1.x
 Copyright © Veracode, Inc. 2023. All Rights Reserved.
-This is an unofficial Veracode product. It does not come with any support or warrenty.
+This is an unofficial Veracode product. It does not come with any support or warranty.
 
 Usage of scan_compare:
   -a string
