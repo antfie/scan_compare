@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/antfie/scan_compare/v2/utils"
 	"net/http"
 	"os"
 	"sort"
@@ -104,7 +105,7 @@ func (api API) getDetailedReport(buildId int) DetailedReport {
 
 func (report DetailedReport) getReviewModulesUrl(region string) string {
 	return fmt.Sprintf("%s/auth/index.jsp#AnalyzeAppModuleList:%d:%d:%d:%d:%d::::%d",
-		parseBaseUrlFromRegion(region),
+		utils.ParseBaseUrlFromRegion(region),
 		report.AccountId,
 		report.AppId,
 		report.BuildId,
@@ -115,7 +116,7 @@ func (report DetailedReport) getReviewModulesUrl(region string) string {
 
 func (report DetailedReport) getTriageFlawsUrl(region string) string {
 	return fmt.Sprintf("%s/auth/index.jsp#ReviewResultsStaticFlaws:%d:%d:%d:%d:%d::::%d",
-		parseBaseUrlFromRegion(region),
+		utils.ParseBaseUrlFromRegion(region),
 		report.AccountId,
 		report.AppId,
 		report.BuildId,

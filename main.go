@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/antfie/scan_compare/v2/utils"
 	"os"
 	"strings"
 	"time"
@@ -49,15 +50,15 @@ func main() {
 		return
 	}
 
-	if parseRegionFromUrl(*scanA) != parseRegionFromUrl(*scanB) {
+	if utils.ParseRegionFromUrl(*scanA) != utils.ParseRegionFromUrl(*scanB) {
 		color.HiRed("Error: Cannot compare between different Veracode regions")
 		os.Exit(1)
 	}
 
 	if *region != "" &&
-		((strings.HasPrefix(*scanA, "https://") && parseRegionFromUrl(*scanA) != *region) ||
-			(strings.HasPrefix(*scanB, "https://") && parseRegionFromUrl(*scanB) != *region)) {
-		color.HiRed(fmt.Sprintf("Error: The region from the URL (%s) does not match that specified by the command line (%s)", parseRegionFromUrl(*scanA), *region))
+		((strings.HasPrefix(*scanA, "https://") && utils.ParseRegionFromUrl(*scanA) != *region) ||
+			(strings.HasPrefix(*scanB, "https://") && utils.ParseRegionFromUrl(*scanB) != *region)) {
+		color.HiRed(fmt.Sprintf("Error: The region from the URL (%s) does not match that specified by the command line (%s)", utils.ParseRegionFromUrl(*scanA), *region))
 		os.Exit(1)
 	}
 
@@ -65,7 +66,7 @@ func main() {
 
 	// Command line region takes precedence
 	if *region == "" {
-		regionToUse = parseRegionFromUrl(*scanA)
+		regionToUse = utils.ParseRegionFromUrl(*scanA)
 	} else {
 		regionToUse = *region
 	}
@@ -75,17 +76,41 @@ func main() {
 	var apiId, apiKey = getCredentials(*vid, *vkey, *profile)
 	var api = API{apiId, apiKey, regionToUse}
 
-	scanAAppId := parseAppIdFromPlatformUrl(*scanA)
-	scanABuildId := parseBuildIdFromPlatformUrl(*scanA)
-	scanBAppId := parseAppIdFromPlatformUrl(*scanB)
-	scanBBuildId := parseBuildIdFromPlatformUrl(*scanB)
+	scanAAppId, err := utils.ParseAppIdFromScanInformation(*scanA)
+
+	if err != nil {
+		color.HiRed("Error:Could not parse app id for scan A")
+		os.Exit(1)
+	}
+
+	scanABuildId, err := utils.ParseBuildIdFromScanInformation(*scanA)
+
+	if err != nil {
+		color.HiRed("Error:Could not parse build id for scan A")
+		os.Exit(1)
+	}
+
+	scanBAppId, err := utils.ParseAppIdFromScanInformation(*scanB)
+
+	if err != nil {
+		color.HiRed("Error:Could not parse app id for scan B")
+		os.Exit(1)
+	}
+
+	scanBBuildId, err := utils.ParseBuildIdFromScanInformation(*scanB)
+
+	if err != nil {
+		color.HiRed("Error:Could not parse build id for scan B")
+		os.Exit(1)
+	}
 
 	if scanABuildId == scanBBuildId {
 		color.HiRed("Error: These are both the same scan")
 		os.Exit(1)
 	}
 
-	api.assertCredentialsWork()
+	// TODO: WIP - fixing EU access
+	//api.assertCredentialsWork()
 
 	colorPrintf(fmt.Sprintf("Comparing scan %s against scan %s in the %s region\n",
 		color.HiGreenString("\"A\" (Build id = %d)", scanABuildId),
@@ -112,13 +137,14 @@ func main() {
 func (data Data) reportOnWarnings(scanAUrl, scanBUrl string) {
 	var report strings.Builder
 
-	if isPlatformURL(scanAUrl) && isPlatformURL(scanBUrl) {
-		if parseAccountIdFromPlatformUrl(scanAUrl) != parseAccountIdFromPlatformUrl(scanBUrl) {
-			report.WriteString("* These scans are from different accounts\n")
-		} else if parseAppIdFromPlatformUrl(scanAUrl) != parseAppIdFromPlatformUrl(scanBUrl) {
-			report.WriteString("* These scans are from different application profiles\n")
-		}
-	}
+	// TODO: WIP - fixing EU access
+	//if utils.IsPlatformURL(scanAUrl) && utils.IsPlatformURL(scanBUrl) {
+	//	if parseAccountIdFromPlatformUrl(scanAUrl) != parseAccountIdFromPlatformUrl(scanBUrl) {
+	//		report.WriteString("* These scans are from different accounts\n")
+	//	} else if utils.ParseAppIdFromScanInformation(scanAUrl) != utils.ParseAppIdFromScanInformation(scanBUrl) {
+	//		report.WriteString("* These scans are from different application profiles\n")
+	//	}
+	//}
 
 	if data.ScanAReport.StaticAnalysis.EngineVersion != data.ScanBReport.StaticAnalysis.EngineVersion {
 		report.WriteString("* The scan engine versions are different. This means there has been one or more deployments of the Veracode scan engine between these scans. This can sometimes explain why new flaws might be reported (due to improved scan coverage), and others are no longer reported (due to a reduction of False Positives)\n")
